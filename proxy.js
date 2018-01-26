@@ -1,6 +1,6 @@
 var http = require('http');
 
-http.createServer(onRequest).listen(80);
+http.createServer(onRequest).listen(3023);
 
 var cluster1Address = "35.197.31.30";
 var cluster2Address = "35.184.176.29";
