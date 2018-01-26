@@ -1,0 +1,16 @@
+{
+    "name": "kubeproxy",
+    "version": "0.0.1",
+    "author": "Ramesh",
+    "description": "reverse proxy",
+    "license": "Apache",
+    "engines": {
+        "node": ">=0.12.7"
+    },
+    "scripts": {
+        "start": "node proxy.js"
+    },
+    "dependencies": {
+      
+    }
+}
