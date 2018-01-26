@@ -19,7 +19,7 @@ spec:
       containers:
       - name: kubeproxy-app
         # Replace [GCLOUD_PROJECT] with your project ID or use `make template`.
-        image: gcr.io/fourth-scheme-192005/kubeproxy
+        image: gcr.io/fourth-scheme-192005/kubeproxy2
         # This setting makes nodes pull the docker image every time before
         # starting the pod. This is useful when debugging, but should be turned
         # off in production.
