@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubeproxy-frontend
+  labels:
+    app: kubeproxy
+    tier: frontend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3023
+  selector:
+    app: kubeproxy
+    tier: frontend
