@@ -19,7 +19,8 @@ spec:
       containers:
       - name: kubeproxy-app
         # Replace [GCLOUD_PROJECT] with your project ID or use `make template`.
-        image: gcr.io/fourth-scheme-192005/kubeproxy2
+        #image: gcr.io/fourth-scheme-192005/kubeproxy2
+        image: gcr.io/glowforge-manufacturing/kubeproxy2
         # This setting makes nodes pull the docker image every time before
         # starting the pod. This is useful when debugging, but should be turned
         # off in production.
@@ -30,4 +31,5 @@ spec:
           containerPort: 8080
         env:
           - name: PROJECT_ID
-            value: fourth-scheme-192005
+            #value: fourth-scheme-192005
+            value: glowforge-manufacturing

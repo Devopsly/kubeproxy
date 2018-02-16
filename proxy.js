@@ -1,9 +1,10 @@
 var http = require('http');
+//const util = require('util');
 
 http.createServer(onRequest).listen(3023);
 
-var cluster1Address = "35.197.31.30";
-var cluster2Address = "35.184.176.29";
+var cluster1Address = "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
+var cluster2Address = "146.148.41.230" ; // GFCORE manufacturing LB // "35.184.176.29";
 
 if(process.env.cluster1Address != null)
 {
@@ -24,22 +25,28 @@ function onRequest(client_req, client_res) {
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
 
+  var uniqueId = (new Date()).getTime();
+
   var options1 = {
     hostname: cluster1Address, // 'www.google.com',
     port: 80,
     path: client_req.url,
-    method: 'GET'
+    method: client_req.method // 'GET' // change to client_req method
   };
 
   var options2 = {
     hostname: cluster2Address, // 'www.google.com',
     port: 80,
     path: client_req.url,
-    method: 'GET'
+    method: client_req.method  // 'GET' // change to client_req method
   };
 
 
   var proxy1 = http.request(options1, function (res) {
+
+    console.log(uniqueId);
+    //console.log(util.inspect(res, false, null))
+
     res.pipe(client_res, {
       end: true
     });
@@ -53,6 +60,9 @@ function onRequest(client_req, client_res) {
 
 
   var proxy2 = http.request(options2, function (res2) {
+    
+    console.log(uniqueId);
+    //console.log(util.inspect(res2, false, null))
     /*
     res2.pipe(client_res, {
       end: true
