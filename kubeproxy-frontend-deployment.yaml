@@ -24,7 +24,39 @@ spec:
         ports:
         - name: http-server
           containerPort: 3023
+        - name: https-server
+          containerPort: 3024
+        #GF
+        volumeMounts:
+          - mountPath: /etc/ssl-glowforge
+            name: ssl
+            readOnly: true
+          - mountPath: /etc/newrelic-secret
+            name: secret-newrelic-volume
+            readOnly: true
+          - mountPath: /etc/secrets
+            name: secret-volume
+            readOnly: true
+        #END GF
         env:
           - name: PROJECT_ID
             #value: fourth-scheme-192005
             value: glowforge-manufacturing
+      #GF
+      volumes:
+        - name: ssl
+          secret:
+            defaultMode: 420
+            secretName: manufacturing-ssl
+        - hostPath:
+            path: /etc/ssl/certs
+          name: ssl-certs
+        - name: secret-newrelic-volume
+          secret:
+            defaultMode: 420
+            secretName: newrelic.yml
+        - name: secret-volume
+          secret:
+            defaultMode: 420
+            secretName: instance-secrets
+      #END GF
