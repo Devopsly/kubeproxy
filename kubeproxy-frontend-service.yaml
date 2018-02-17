@@ -10,6 +10,8 @@ spec:
   ports:
   - port: 80
     targetPort: 3023
+  - port: 443
+    targetPort: 3024
   selector:
     app: kubeproxy
     tier: frontend
