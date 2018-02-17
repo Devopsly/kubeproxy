@@ -9,8 +9,10 @@ spec:
   type: LoadBalancer
   ports:
   - port: 80
+    name: http1-service
     targetPort: 3023
   - port: 443
+    name: https1-service
     targetPort: 3024
   selector:
     app: kubeproxy
