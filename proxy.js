@@ -10,6 +10,8 @@ console.log("Welcome" );
 
 var options = 
 {
+  // cert: fs.readFileSync('../ssl/windocks.com.crt'),
+  // key: fs.readFileSync('../ssl/windocks.com.key')
   cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
   key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
@@ -18,7 +20,7 @@ http.createServer(onRequest).listen(3023);
 
 https.createServer(options, onRequestS).listen(3024);
 
-var cluster1Address =  "google.com" ; // "app.glowforge.com"; //  "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
+var cluster1Address =  "app.glowforge.com"; //  "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
 var cluster2Address =  "manufacturing.glowforge.com";  // "146.148.41.230" ; // GFCORE manufacturing LB // "35.184.176.29";
 
 if(process.env.cluster1Address != null)
@@ -34,13 +36,15 @@ if(process.env.cluster2Address != null)
 
 
 function onRequest(client_req, client_res) {
-   console.log('serving http: ' + client_req.url);
+  // console.log('serving http: ' + client_req.url);
 
 
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
 
-  var uniqueId = (new Date()).getTime();
+  var uniqueId = client_req.headers['x-forwarded-for'] + "-" + (new Date()).getTime()  ;
+
+  var sourceIp = client_req.headers['x-forwarded-for'] ;
 
   var options1 = {
     hostname: cluster1Address, // 'www.google.com',
@@ -62,10 +66,21 @@ function onRequest(client_req, client_res) {
 
   var proxy1 = https.request(options1, function (res) {
 
-    console.log("req 1 " + uniqueId);
-
+    console.log("Request unique Id is " + uniqueId);
     console.log(res.statusCode);
     console.log(JSON.stringify(res.headers));
+
+    var obj = 
+    {
+      id: uniqueId,
+      source: sourceIp,
+      request_url: client_req.url,
+      response_code: res.statusCode,
+      response_header: res.headers
+
+    };
+
+    console.log(JSON.stringify(obj) );
 
     //console.log(util.inspect(res, false, null));
 
@@ -113,6 +128,14 @@ function onRequest(client_req, client_res) {
     }
     else
     {
+      /*
+      res.on('data', function(data){
+        // res.setEncoding('utf8');
+        console.log("Response data is: " + data);
+      });
+    */
+
+      // console.log(res);
       res.pipe(client_res, {
         end: true
       });
@@ -131,6 +154,9 @@ function onRequest(client_req, client_res) {
   var proxy2 = https.request(options2, function (res2) {
     
     console.log("req 2 " + uniqueId);
+
+    
+
     //console.log(util.inspect(res2, false, null))
     
   });
