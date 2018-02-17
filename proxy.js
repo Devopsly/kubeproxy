@@ -10,8 +10,8 @@ console.log("Welcome" );
 
 var options = 
 {
-  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
-  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
+  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
+  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
 
 http.createServer(onRequest).listen(3023);

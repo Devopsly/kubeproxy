@@ -4,8 +4,8 @@ var fs = require('fs');
 
 var options = 
 {
-  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
-  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
+  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
+  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
 
 
