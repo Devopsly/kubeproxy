@@ -103,24 +103,28 @@ function onRequest(client_req, client_res) {
 
   var headers = {};
   headers["accept"] = client_req.headers["accept"];
-  if(client_req.headers["Authorization"])
-  {
-    headers["Authorization"] = client_req.headers["Authorization"];
-  }
-  if(client_req.headers["Cookie"])
-  {
-    headers["Cookie"] = client_req.headers["Cookie"];
-  }
+  
 
 
-  if(client_req.headers["Content-Type"])
+  if(client_req.headers["authorization"])
   {
-    headers["Content-Type"] = client_req.headers["Content-Type"];
+    headers["authorization"] = client_req.headers["authorization"];
   }
-  if(client_req.headers["Content-Length"])
+  if(client_req.headers["cookie"])
   {
-    headers["Content-Length"] = client_req.headers["Content-Length"];
+    headers["cookie"] = client_req.headers["cookie"];
   }
+
+  if(client_req.headers["content-type"])
+  {
+    headers["content-type"] = client_req.headers["content-type"];
+  }
+  if(client_req.headers["content-length"])
+  {
+    headers["content-length"] = client_req.headers["content-length"];
+  }
+
+  console.log("Mirroring: headers actually mirrored: " + headers );
 
   var options1 = {
     hostname: cluster1Address, // 'www.google.com',
@@ -148,32 +152,33 @@ function onRequest(client_req, client_res) {
 
   var headers2 = {};
   headers2["accept"] = client_req.headers["accept"];
-  if(client_req.headers["Authorization"])
+  if(client_req.headers["authorization"])
   {
-    var tok1 = client_req.headers["Authorization"].replace("Bearer", "").trim();
+    var tok1 = client_req.headers["authorization"].replace("Bearer", "").trim();
     if(tokenMap.hasOwnProperty(tok1))
     {
-      headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
+      headers2["authorization"] = client_req.headers["authorization"].replace(tok1, tokenMap[tok1]);
       console.log('Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
     }
     else
     {
-      headers2["Authorization"] =  client_req.headers["Authorization"];
+      headers2["authorization"] =  client_req.headers["authorization"];
     }
   }
-  if(client_req.headers["Cookie"])
+  if(client_req.headers["cookie"])
   {
-    if(cookieMap.hasOwnProperty(client_req.headers["Cookie"]) )
+    if(cookieMap.hasOwnProperty(client_req.headers["cookie"]) )
     {
-      headers2["Cookie"] = cookieMap[client_req.headers["Cookie"]];
-      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["Cookie"] + " , Cookie2: " + headers2["Cookie"]);
+      headers2["cookie"] = cookieMap[client_req.headers["cookie"]];
+      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
     }
     else
     {
-      headers2["Cookie"] = client_req.headers["Cookie"] ;
+      headers2["cookie"] = client_req.headers["cookie"] ;
     }
   }
 
+  console.log("Mirroring actual headers 2: " + headers2);
 
   var options2 = {
     hostname: cluster2Address, // 'www.google.com',
@@ -482,24 +487,25 @@ function onRequestS(client_req, client_res) {
 
   var headers = {};
   headers["accept"] = client_req.headers["accept"];
-  if(client_req.headers["Authorization"])
+  if(client_req.headers["authorization"])
   {
-    headers["Authorization"] = client_req.headers["Authorization"];
+    headers["authorization"] = client_req.headers["authorization"];
   }
-  if(client_req.headers["Cookie"])
+  if(client_req.headers["cookie"])
   {
-    headers["Cookie"] = client_req.headers["Cookie"];
+    headers["cookie"] = client_req.headers["cookie"];
   }
 
+  if(client_req.headers["content-type"])
+  {
+    headers["content-type"] = client_req.headers["content-type"];
+  }
+  if(client_req.headers["content-length"])
+  {
+    headers["content-length"] = client_req.headers["content-length"];
+  }
 
-  if(client_req.headers["Content-Type"])
-  {
-    headers["Content-Type"] = client_req.headers["Content-Type"];
-  }
-  if(client_req.headers["Content-Length"])
-  {
-    headers["Content-Length"] = client_req.headers["Content-Length"];
-  }
+  console.log("Mirroring: headers actually mirrored: " + headers );
 
 
   var requestResponseData = {
@@ -536,31 +542,36 @@ function onRequestS(client_req, client_res) {
 
   var headers2 = {};
   headers2["accept"] = client_req.headers["accept"];
-  if(client_req.headers["Authorization"])
+  
+   if(client_req.headers["authorization"])
   {
-    var tok1 = client_req.headers["Authorization"].replace("Bearer", "").trim();
+    var tok1 = client_req.headers["authorization"].replace("Bearer", "").trim();
     if(tokenMap.hasOwnProperty(tok1))
     {
-      headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
+      headers2["authorization"] = client_req.headers["authorization"].replace(tok1, tokenMap[tok1]);
       console.log('Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
     }
     else
     {
-      headers2["Authorization"] =  client_req.headers["Authorization"];
+      headers2["authorization"] =  client_req.headers["authorization"];
     }
   }
-  if(client_req.headers["Cookie"])
+  if(client_req.headers["cookie"])
   {
-    if(cookieMap.hasOwnProperty(client_req.headers["Cookie"]) )
+    if(cookieMap.hasOwnProperty(client_req.headers["cookie"]) )
     {
-      headers2["Cookie"] = cookieMap[client_req.headers["Cookie"]];
-      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["Cookie"] + " , Cookie2: " + headers2["Cookie"]);
+      headers2["cookie"] = cookieMap[client_req.headers["cookie"]];
+      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
     }
     else
     {
-      headers2["Cookie"] = client_req.headers["Cookie"] ;
+      headers2["cookie"] = client_req.headers["cookie"] ;
     }
   }
+
+  console.log("Mirroring actual headers 2: " + headers2);
+
+
 
 
   var options2 = {
