@@ -481,6 +481,16 @@ function onRequestS(client_req, client_res) {
     responseData2 : null
   }
 
+  var tokenData = 
+  {
+    token1: "",
+    token2: ""
+  }
+   var cookieData = 
+  {
+    cookie1: "",
+    cookie2: ""
+  }
 
 
   var options1 = {
