@@ -34,6 +34,9 @@ if(process.env.cluster2Address != null)
 }
 
 
+var tokenMap = {};
+var cookieMap = {};
+
 
 function onRequest(client_req, client_res) {
   // console.log('serving http: ' + client_req.url);
@@ -86,13 +89,55 @@ function onRequest(client_req, client_res) {
     headers: headers
   };
 
+
+
+
+  // TODO
+
+  // headers["Authorization"]  and headers["Cookie"] got options2 request have to be different
+  // in the response callback for 1 if the req url was ...login , store the token in array 
+  // in response callback for 2 if the req url was ...login , store the token in array
+  // create new hash table, key = token 1 and val = token 2
+  // Similarly for cookie in response code
+  // Future requests from 1, if they have toekn or cookie in client_req,
+  // Use the hash table to get the corresponding token or cookie for #2
+  // Set headers["Authorization"]  and headers["Cookie"] to the values 
+  // That way manufacturing mirror requests have correct auth info
+
+  var headers2 = {};
+  headers2["accept"] = client_req.headers["accept"];
+  if(client_req.headers["Authorization"])
+  {
+    var tok1 = headers2["Authorization"].replace("Bearer", "").trim();
+    if(tokenMap.hasOwnProperty(tok1))
+    {
+      headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
+    }
+    else
+    {
+      headers2["Authorization"] =  client_req.headers["Authorization"];
+    }
+  }
+  if(client_req.headers["Cookie"])
+  {
+    if(cookieMap.hasOwnProperty(client_req.headers["Cookie"]) )
+    {
+      headers2["Cookie"] = cookieMap[client_req.headers["Cookie"]];
+    }
+    else
+    {
+      headers2["Cookie"] = client_req.headers["Cookie"] ;
+    }
+  }
+
+
   var options2 = {
     hostname: cluster2Address, // 'www.google.com',
     port: 443,
     path: client_req.url,
     method: client_req.method,  // 'GET' // change to client_req method
     rejectUnauthorized: false,
-    headers: headers
+    headers: headers2
   };
 
 
@@ -101,8 +146,19 @@ function onRequest(client_req, client_res) {
     timeRequest2Made : (new Date()).getTime(),
     response1LatencyMilliseconds : 0,
     response2LatencyMilliseconds : 0,
-    responseData1 : "",
-    responseData2 : ""
+    responseData1 : null,
+    responseData2 : null
+  }
+
+  var tokenData = 
+  {
+    token1: "",
+    token2: ""
+  }
+   var cookieData = 
+  {
+    cookie1: "",
+    cookie2: ""
   }
 
   var proxy1 = https.request(options1, function (res) {
@@ -117,14 +173,11 @@ function onRequest(client_req, client_res) {
       source: sourceIp,
       request_url: client_req.url,
       response_code: res.statusCode,
-      response_header: res.headers
-
+      response_header: res.headers,
+      data: null
     };
-
-
-
     
-    console.log("Response 1: " + JSON.stringify(obj) );
+    // console.log("Response 1: " + JSON.stringify(obj) );
 
     //console.log(util.inspect(res, false, null));
 
@@ -135,40 +188,6 @@ function onRequest(client_req, client_res) {
           location: res.headers.location
         });
         client_res.end();
-
-      /*
-      var strArr1 = res.headers.location.split("//");
-      var strArr2 =  strArr1[1].split("/");
-      var hostName = strArr2[0];
-      var path = strArr1[1].replace(hostName + "/", "");
-
-      console.log("hostName " + hostName);
-      console.log("path " + path);
-
-      var optionsRedirect1 = {
-        hostname: hostName, // 'www.google.com',
-        port: 443,
-        method: client_req.method, // 'GET' // change to client_req method
-        rejectUnauthorized: false 
-      };
-
-      var proxyRedirect1 = https.request(optionsRedirect1, function (resRedirect) {
-
-        console.log(resRedirect.statusCode);
-        console.log(JSON.stringify(resRedirect.headers));
-        if(resRedirect.statusCode == 301 || resRedirect.statusCode == 302)
-        {
-          console.log("AGAIN " );
-        }
-
-
-        resRedirect.pipe(client_res, {
-          end: true
-        });
-      });
-
-    */
-
     }
     else
     {
@@ -183,6 +202,36 @@ function onRequest(client_req, client_res) {
         if (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
+          if(contentType.toLowerCase().indexOf("json") != -1 )
+          {
+            obj.data = JSON.parse(responseData);
+            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token1 = obj.data.auth_token;
+              if(tokenData.token2 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+              }
+            }
+          }
+          else
+          {
+            obj.data = responseData;
+            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the cookie
+              cookieData.cookie1 = res.headers["Cookie"];
+              if(cookieData.cookie2 != null)
+              {
+                cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+          }
+
+
+          
+
           var timeNow = (new Date()).getTime();
           requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
 
@@ -190,7 +239,7 @@ function onRequest(client_req, client_res) {
           // console.log("==================Response data from production is: " + JSON.stringify(obj));
           requestResponseData.responseData1 = obj;
 
-          if(requestResponseData.responseData2 != "")
+          if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
           }
@@ -225,21 +274,13 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
       source: sourceIp,
       request_url: client_req.url,
       response_code: res2.statusCode,
-      response_header: res2.headers
+      response_header: res2.headers,
+      data: null
     };
-
-    console.log("Response 2: " + JSON.stringify(obj2) );
 
     if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
     {
       console.log("Redirect 2 to " + res2.headers.location);
-
-      /*
-        client_res.writeHead(res2.statusCode, {
-          location: res2.headers.location
-        });
-        client_res.end();
-      */
     }
     else
     {
@@ -253,15 +294,39 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
         if (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
+          if(contentType.toLowerCase().indexOf("json") != -1 )
+          {
+            obj2.data = JSON.parse(responseData);
+            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token2 = obj2.data.auth_token;
+              if(tokenData.token1 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+              }
+            }
+          }
+          else
+          {
+            obj2.data = responseData;
+            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the cookie
+              cookieData.cookie2 = res2.headers["Cookie"];
+              if(cookieData.cookie1 != null)
+              {
+                cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+          }
+
           var timeNow = (new Date()).getTime();
           requestResponseData.response2LatencyMilliseconds = timeNow - requestResponseData.timeRequest2Made;
 
-          // console.log(JSON.stringify(obj2) );
-          //console.log("===============Response data from manufacturing is: " + JSON.stringify(obj2));
-
           requestResponseData.responseData2 = obj2;
 
-          if(requestResponseData.responseData1 != "")
+          if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
           }
@@ -338,8 +403,8 @@ function onRequestS(client_req, client_res) {
     timeRequest2Made : (new Date()).getTime(),
     response1LatencyMilliseconds : 0,
     response2LatencyMilliseconds : 0,
-    responseData1 : "",
-    responseData2 : ""
+    responseData1 : null,
+    responseData2 : null
   }
 
 
@@ -353,13 +418,41 @@ function onRequestS(client_req, client_res) {
     headers: headers
   };
 
+
+  var headers2 = {};
+  headers2["accept"] = client_req.headers["accept"];
+  if(client_req.headers["Authorization"])
+  {
+    var tok1 = headers2["Authorization"].replace("Bearer", "").trim();
+    if(tokenMap.hasOwnProperty(tok1))
+    {
+      headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
+    }
+    else
+    {
+      headers2["Authorization"] =  client_req.headers["Authorization"];
+    }
+  }
+  if(client_req.headers["Cookie"])
+  {
+    if(cookieMap.hasOwnProperty(client_req.headers["Cookie"]) )
+    {
+      headers2["Cookie"] = cookieMap[client_req.headers["Cookie"]];
+    }
+    else
+    {
+      headers2["Cookie"] = client_req.headers["Cookie"] ;
+    }
+  }
+
+
   var options2 = {
     hostname: cluster2Address, // 'www.google.com',
     port: 443,
     path: client_req.url,
     method: client_req.method,  // 'GET' // change to client_req method
     rejectUnauthorized: false,
-    headers: headers
+    headers: headers2
   };
 
 
@@ -371,7 +464,8 @@ function onRequestS(client_req, client_res) {
       source: sourceIp,
       request_url: client_req.url,
       response_code: res.statusCode,
-      response_header: res.headers
+      response_header: res.headers,
+      data: null
 
     };
 
@@ -394,10 +488,37 @@ function onRequestS(client_req, client_res) {
         if (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
+          if(contentType.toLowerCase().indexOf("json") != -1 )
+          {
+            obj.data = JSON.parse(responseData);
+            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token1 = obj.data.auth_token;
+              if(tokenData.token2 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+              }
+            }
+          }
+          else
+          {
+            obj.data = responseData;
+            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the cookie
+              cookieData.cookie1 = res.headers["Cookie"];
+              if(cookieData.cookie2 != null)
+              {
+                cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+          }
+
           var timeNow = (new Date()).getTime();
           requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
           requestResponseData.responseData1 = obj;
-          if(requestResponseData.responseData2 != "")
+          if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
           }
@@ -425,7 +546,8 @@ function onRequestS(client_req, client_res) {
       source: sourceIp,
       request_url: client_req.url,
       response_code: res2.statusCode,
-      response_header: res2.headers
+      response_header: res2.headers,
+      data: null
     };
     
    if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
@@ -447,6 +569,33 @@ function onRequestS(client_req, client_res) {
         if (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
+          if(contentType.toLowerCase().indexOf("json") != -1 )
+          {
+            obj2.data = JSON.parse(responseData);
+            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token2 = obj2.data.auth_token;
+              if(tokenData.token1 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+              }
+            }
+          }
+          else
+          {
+            obj2.data = responseData;
+            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the cookie
+              cookieData.cookie2 = res2.headers["Cookie"];
+              if(cookieData.cookie1 != null)
+              {
+                cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+          }
+
           var timeNow = (new Date()).getTime();
           requestResponseData.response2LatencyMilliseconds = timeNow - requestResponseData.timeRequest2Made;
 
@@ -455,7 +604,7 @@ function onRequestS(client_req, client_res) {
 
           requestResponseData.responseData2 = obj2;
 
-          if(requestResponseData.responseData1 != "")
+          if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
           }
