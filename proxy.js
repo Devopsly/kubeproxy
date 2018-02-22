@@ -130,7 +130,7 @@ function onRequest(client_req, client_res) {
 
     if(res.statusCode == 301 || res.statusCode == 302 || res.statusCode == 404)
     {
-        console.log("Redirect to " + res.headers.location);
+        console.log("Redirect 1 to " + res.headers.location);
         client_res.writeHead(res.statusCode, {
           location: res.headers.location
         });
@@ -232,11 +232,14 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
 
     if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
     {
-      console.log("Redirect to " + res2.headers.location);
+      console.log("Redirect 2 to " + res2.headers.location);
+
+      /*
         client_res.writeHead(res2.statusCode, {
           location: res2.headers.location
         });
         client_res.end();
+      */
     }
     else
     {
