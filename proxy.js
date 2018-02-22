@@ -79,6 +79,8 @@ function onRequest(client_req, client_res) {
 
   console.log('Http request to ' + client_req.url);
   console.log(client_req.headers);
+  logger.info('Http request to ' + client_req.url);
+  logger.info(client_req.headers);
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
@@ -405,6 +407,8 @@ function onRequestS(client_req, client_res) {
 
   console.log("Https Request to " + client_req.url);
   console.log(client_req.headers);
+  logger.info('Http request to ' + client_req.url);
+  logger.info(client_req.headers);
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
