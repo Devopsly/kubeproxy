@@ -1,0 +1,4 @@
+[
+{"host":"35.224.47.74", "response1LatencyMilliseconds" : 3002,  "response2LatencyMilliseconds" : 5002, "responseData1": { "mirroring_unique_id": "3455", "content_type": "json", "request_url" : "/machines/list", "response_code" : 200, "data" : { "answer" : "no", "reason": "that" }}, "responseData2" : { "mirroring_unique_id": "3455", "content_type": "application/json", "request_url" : "/machines/list", "response_code" : 200, "data" : { "answer" : "no", "reason": "that" }} },
+{"host":"35.224.47.74",  "response1LatencyMilliseconds" : 2022,  "response2LatencyMilliseconds" : 1302, "responseData1": { "mirroring_unique_id": "3435", "content_type": "json", "request_url" : "/machines/all", "response_code" : 200, "data" : { "answer" : "yes", "reason": "this" }}, "responseData2" : { "mirroring_unique_id": "3455", "content_type": "application/json", "request_url" : "/machines/list", "response_code" : 200, "data" : { "answer" : "no", "reason": "that" }} }
+]
