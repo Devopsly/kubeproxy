@@ -124,7 +124,7 @@ function onRequest(client_req, client_res) {
 
 
     
-    // console.log(JSON.stringify(obj) );
+    console.log("Response 1: " + JSON.stringify(obj) );
 
     //console.log(util.inspect(res, false, null));
 
@@ -227,6 +227,8 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
       response_code: res2.statusCode,
       response_header: res2.headers
     };
+
+    console.log("Response 2: " + JSON.stringify(obj2) );
 
     if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
     {
