@@ -3,17 +3,43 @@ var https = require('https');
 var fs = require('fs');
 //var sslca = require('ssl-root-cas');
 const util = require('util');
+var uuidV4 = require('uuid/v4');
 
-// sslca.inject();
 
-console.log("Welcome" );
+const winston = require('winston');
+const Logger = winston.Logger;
+const Console = winston.transports.Console;
+
+// Imports the Google Cloud client library for Winston
+const LoggingWinston = require('@google-cloud/logging-winston').LoggingWinston;
+
+// Creates a Winston Stackdriver Logging client
+const loggingWinston = new LoggingWinston();
+
+// Create a Winston logger that streams to Stackdriver Logging
+// Logs will be written to: "projects/YOUR_PROJECT_ID/logs/winston_log"
+const logger = new Logger({
+  level: 'info', // log at 'info' and above
+  transports: [
+    // Log to the console
+    new Console(),
+    // And log to Stackdriver Logging
+    loggingWinston,
+  ],
+});
+
+
+
+
+
+
 
 var options = 
 {
-  // cert: fs.readFileSync('../ssl/windocks.com.crt'),
-  // key: fs.readFileSync('../ssl/windocks.com.key')
-  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
-  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
+  cert: fs.readFileSync('../ssl/windocks.com.crt'),
+  key: fs.readFileSync('../ssl/windocks.com.key')
+  // cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
+  // key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
 
 http.createServer(onRequest).listen(3023);
@@ -22,6 +48,10 @@ https.createServer(options, onRequestS).listen(3024);
 
 var cluster1Address =  "app.glowforge.com"; //  "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
 var cluster2Address =  "manufacturing.glowforge.com";  // "146.148.41.230" ; // GFCORE manufacturing LB // "35.184.176.29";
+
+//var cluster1Address =  "windocks.com"; 
+//var cluster2Address =  "windocks.com"; 
+
 
 if(process.env.cluster1Address != null)
 {
@@ -39,7 +69,7 @@ var cookieMap = {};
 
 
 function onRequest(client_req, client_res) {
-  // console.log('serving http: ' + client_req.url);
+  
 
 
   client_req.uniqueLogId = (new Date()).getTime();
@@ -47,13 +77,12 @@ function onRequest(client_req, client_res) {
 
   // console.log(JSON.stringify(client_req.headers));
 
+  console.log('Http request to ' + client_req.url);
   console.log(client_req.headers);
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
-  console.log(sourceIp);
-
-  var uniqueId = sourceIp + (new Date()).getTime() ;
+  var uniqueId = uuidV4(); // sourceIp + (new Date()).getTime() ;
 
   //  client_req.headers['x-forwarded-for'] + "-" + (new Date()).getTime()  ;
 
@@ -108,7 +137,7 @@ function onRequest(client_req, client_res) {
   headers2["accept"] = client_req.headers["accept"];
   if(client_req.headers["Authorization"])
   {
-    var tok1 = headers2["Authorization"].replace("Bearer", "").trim();
+    var tok1 = client_req.headers["Authorization"].replace("Bearer", "").trim();
     if(tokenMap.hasOwnProperty(tok1))
     {
       headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
@@ -142,6 +171,7 @@ function onRequest(client_req, client_res) {
 
 
   var requestResponseData = {
+    id: uniqueId,
     timeRequest1Made : (new Date()).getTime(),
     timeRequest2Made : (new Date()).getTime(),
     response1LatencyMilliseconds : 0,
@@ -229,9 +259,6 @@ function onRequest(client_req, client_res) {
             }
           }
 
-
-          
-
           var timeNow = (new Date()).getTime();
           requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
 
@@ -242,14 +269,24 @@ function onRequest(client_req, client_res) {
           if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
+            logger.info(requestResponseData);
           }
         }
       });      
 
-      // console.log(res);
+
+
+
+      if(res.headers.hasOwnProperty("Cookie"))
+      {
+        client_res.headers["Cookie"] = res.headers["Cookie"];
+      }
+
       res.pipe(client_res, {
         end: true
       });
+
+
     }
 
 
@@ -329,6 +366,7 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
           if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
+            logger.info(requestResponseData);
           }
 
         }
@@ -361,19 +399,16 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
 
 
 function onRequestS(client_req, client_res) {
-   console.log('https serving: ' + client_req.url);
-
 
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
 
+  console.log("Https Request to " + client_req.url);
   console.log(client_req.headers);
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
-  console.log(sourceIp);
-
-  var uniqueId = sourceIp + (new Date()).getTime() ;
+  var uniqueId = uuidV4(); // sourceIp + (new Date()).getTime() ;
 
 
   var headers = {};
@@ -399,6 +434,7 @@ function onRequestS(client_req, client_res) {
 
 
   var requestResponseData = {
+    id: uniqueId,
     timeRequest1Made : (new Date()).getTime(),
     timeRequest2Made : (new Date()).getTime(),
     response1LatencyMilliseconds : 0,
@@ -423,7 +459,7 @@ function onRequestS(client_req, client_res) {
   headers2["accept"] = client_req.headers["accept"];
   if(client_req.headers["Authorization"])
   {
-    var tok1 = headers2["Authorization"].replace("Bearer", "").trim();
+    var tok1 = client_req.headers["Authorization"].replace("Bearer", "").trim();
     if(tokenMap.hasOwnProperty(tok1))
     {
       headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
@@ -521,6 +557,7 @@ function onRequestS(client_req, client_res) {
           if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
+            logger.info(requestResponseData);
           }
         }
       });
@@ -607,6 +644,7 @@ function onRequestS(client_req, client_res) {
           if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
+            logger.info(requestResponseData);
           }
 
         }
