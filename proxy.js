@@ -36,10 +36,10 @@ const logger = new Logger({
 
 var options = 
 {
-  cert: fs.readFileSync('../ssl/windocks.com.crt'),
-  key: fs.readFileSync('../ssl/windocks.com.key')
-  // cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
-  // key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
+  // cert: fs.readFileSync('../ssl/windocks.com.crt'),
+  // key: fs.readFileSync('../ssl/windocks.com.key')
+  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
+  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
 
 http.createServer(onRequest).listen(3023);
