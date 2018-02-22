@@ -10,18 +10,18 @@ console.log("Welcome" );
 
 var options = 
 {
-  cert: fs.readFileSync('../ssl/windocks.com.crt'),
-  key: fs.readFileSync('../ssl/windocks.com.key')
-  //cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
-  //key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
+  // cert: fs.readFileSync('../ssl/windocks.com.crt'),
+  // key: fs.readFileSync('../ssl/windocks.com.key')
+  cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
+  key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
 
 http.createServer(onRequest).listen(3023);
 
 https.createServer(options, onRequestS).listen(3024);
 
-var cluster1Address = "windocks.com" ; //  "app.glowforge.com"; //  "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
-var cluster2Address = "windocks.com" ; // "manufacturing.glowforge.com";  // "146.148.41.230" ; // GFCORE manufacturing LB // "35.184.176.29";
+var cluster1Address =  "app.glowforge.com"; //  "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
+var cluster2Address =  "manufacturing.glowforge.com";  // "146.148.41.230" ; // GFCORE manufacturing LB // "35.184.176.29";
 
 if(process.env.cluster1Address != null)
 {
