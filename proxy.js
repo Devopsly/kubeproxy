@@ -36,8 +36,8 @@ const logger = new Logger({
 
 var options = 
 {
-  // cert: fs.readFileSync('../ssl/windocks.com.crt'),
-  // key: fs.readFileSync('../ssl/windocks.com.key')
+   // cert: fs.readFileSync('../ssl/test.com.crt'),
+   // key: fs.readFileSync('../ssl/test.com.key')
   cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
   key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
@@ -49,8 +49,8 @@ https.createServer(options, onRequestS).listen(3024);
 var cluster1Address =  "app.glowforge.com"; //  "130.211.155.236" ; // GFCORE prod LB // "35.197.31.30";
 var cluster2Address =  "manufacturing.glowforge.com";  // "146.148.41.230" ; // GFCORE manufacturing LB // "35.184.176.29";
 
-//var cluster1Address =  "windocks.com"; 
-//var cluster2Address =  "windocks.com"; 
+//var cluster1Address =  "google.com"; 
+//var cluster2Address =  "google.com"; 
 
 
 if(process.env.cluster1Address != null)
@@ -79,8 +79,8 @@ function onRequest(client_req, client_res) {
 
   console.log('Http request to ' + client_req.url);
   console.log(client_req.headers);
-  logger.info('Http request to ' + client_req.url);
-  logger.info(client_req.headers);
+  logger.info('Mirroring: Http request to ' + client_req.url);
+  logger.info('Mirroring: Client request headers: ' + JSON.stringify(client_req.headers) );
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
@@ -143,6 +143,7 @@ function onRequest(client_req, client_res) {
     if(tokenMap.hasOwnProperty(tok1))
     {
       headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
+      console.log('Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
     }
     else
     {
@@ -154,6 +155,7 @@ function onRequest(client_req, client_res) {
     if(cookieMap.hasOwnProperty(client_req.headers["Cookie"]) )
     {
       headers2["Cookie"] = cookieMap[client_req.headers["Cookie"]];
+      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["Cookie"] + " , Cookie2: " + headers2["Cookie"]);
     }
     else
     {
@@ -241,6 +243,8 @@ function onRequest(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token1 = obj.data.auth_token;
+              console.log("Received Json response with auth token: " + tokenData.token1);
+
               if(tokenData.token2 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
@@ -254,9 +258,22 @@ function onRequest(client_req, client_res) {
             {
               // Grab the cookie
               cookieData.cookie1 = res.headers["Cookie"];
+              console.log("Received non Json response with cookie: " + cookieData.cookie1);
+
               if(cookieData.cookie2 != null)
               {
                 cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token1 = JSON.parse(obj.data.auth_token);
+              console.log("Received non Json response with auth token: " + tokenData.token1);
+              if(tokenData.token2 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+
               }
             }
           }
@@ -271,7 +288,7 @@ function onRequest(client_req, client_res) {
           if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
-            logger.info(requestResponseData);
+            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) );
           }
         }
       });      
@@ -340,6 +357,8 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
             {
               // Grab the token 
               tokenData.token2 = obj2.data.auth_token;
+              console.log("Received Json response with auth token: " + tokenData.token2);
+
               if(tokenData.token1 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
@@ -353,9 +372,22 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
             {
               // Grab the cookie
               cookieData.cookie2 = res2.headers["Cookie"];
+              console.log("Received non Json response with cookie: " + cookieData.cookie2);
+
               if(cookieData.cookie1 != null)
               {
                 cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token2 = JSON.parse(obj2.data.auth_token);
+              console.log("Received non Json response with auth token: " + tokenData.token2);
+              if(tokenData.token1 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+
               }
             }
           }
@@ -368,7 +400,7 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
           if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
-            logger.info(requestResponseData);
+            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) ) ;
           }
 
         }
@@ -407,8 +439,8 @@ function onRequestS(client_req, client_res) {
 
   console.log("Https Request to " + client_req.url);
   console.log(client_req.headers);
-  logger.info('Http request to ' + client_req.url);
-  logger.info(client_req.headers);
+  logger.info('Mirroring: Https request to ' + client_req.url);
+  logger.info('Mirroring: client request headers: ' + client_req.headers);
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
@@ -467,6 +499,7 @@ function onRequestS(client_req, client_res) {
     if(tokenMap.hasOwnProperty(tok1))
     {
       headers2["Authorization"] = client_req.headers["Authorization"].replace(tok1, tokenMap[tok1]);
+      console.log('Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
     }
     else
     {
@@ -478,6 +511,7 @@ function onRequestS(client_req, client_res) {
     if(cookieMap.hasOwnProperty(client_req.headers["Cookie"]) )
     {
       headers2["Cookie"] = cookieMap[client_req.headers["Cookie"]];
+      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["Cookie"] + " , Cookie2: " + headers2["Cookie"]);
     }
     else
     {
@@ -535,9 +569,11 @@ function onRequestS(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token1 = obj.data.auth_token;
+              console.log("Received Json response with auth token: " + tokenData.token1);
               if(tokenData.token2 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
+
               }
             }
           }
@@ -548,9 +584,22 @@ function onRequestS(client_req, client_res) {
             {
               // Grab the cookie
               cookieData.cookie1 = res.headers["Cookie"];
+              console.log("Received non Json response with cookie: " + cookieData.cookie1);
+
               if(cookieData.cookie2 != null)
               {
                 cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token1 = JSON.parse(obj.data.auth_token);
+              console.log("Received non Json response with auth token: " + tokenData.token1);
+              if(tokenData.token2 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+
               }
             }
           }
@@ -561,7 +610,7 @@ function onRequestS(client_req, client_res) {
           if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
-            logger.info(requestResponseData);
+            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) );
           }
         }
       });
@@ -617,6 +666,7 @@ function onRequestS(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token2 = obj2.data.auth_token;
+              console.log("Received Json response with auth token: " + tokenData.token2);
               if(tokenData.token1 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
@@ -630,9 +680,22 @@ function onRequestS(client_req, client_res) {
             {
               // Grab the cookie
               cookieData.cookie2 = res2.headers["Cookie"];
+              console.log("Received non Json response with cookie: " + cookieData.cookie2);
+
               if(cookieData.cookie1 != null)
               {
                 cookieMap[cookieData.cookie1] = cookieData.cookie2;
+              }
+            }
+            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            {
+              // Grab the token 
+              tokenData.token2 = JSON.parse(obj2.data.auth_token);
+              console.log("Received non Json response with auth token: " + tokenData.token2);
+              if(tokenData.token1 != null)
+              {
+                tokenMap[tokenData.token1] = tokenData.token2;
+
               }
             }
           }
@@ -648,7 +711,7 @@ function onRequestS(client_req, client_res) {
           if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
-            logger.info(requestResponseData);
+            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) );
           }
 
         }
