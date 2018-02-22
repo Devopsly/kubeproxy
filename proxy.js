@@ -178,7 +178,7 @@ function onRequest(client_req, client_res) {
     }
   }
 
-  console.log("Mirroring actual headers 2: " + headers2);
+  console.log("Mirroring actual headers 2: " + JSON.stringify(headers2) );
 
   var options2 = {
     hostname: cluster2Address, // 'www.google.com',
@@ -264,11 +264,12 @@ function onRequest(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token1 = obj.data.auth_token;
-              console.log("Received Json response with auth token: " + tokenData.token1);
+              console.log("Received Json response 1 with auth token: " + tokenData.token1);
 
               if(tokenData.token2 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
+                console.log("Setting token map: " );
               }
             }
           }
@@ -278,8 +279,8 @@ function onRequest(client_req, client_res) {
             if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
             {
               // Grab the cookie
-              cookieData.cookie1 = res.headers["Cookie"];
-              console.log("Received non Json response with cookie: " + cookieData.cookie1);
+              cookieData.cookie1 = res.headers["cookie"];
+              console.log("Received non Json response  1 with cookie: " + cookieData.cookie1);
 
               if(cookieData.cookie2 != null)
               {
@@ -290,7 +291,7 @@ function onRequest(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token1 = JSON.parse(obj.data.auth_token);
-              console.log("Received non Json response with auth token: " + tokenData.token1);
+              console.log("Received non Json response 1 with auth token: " + tokenData.token1);
               if(tokenData.token2 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
@@ -317,9 +318,9 @@ function onRequest(client_req, client_res) {
 
 
 
-      if(res.headers.hasOwnProperty("Cookie"))
+      if(res.headers.hasOwnProperty("cookie"))
       {
-        client_res.headers["Cookie"] = res.headers["Cookie"];
+        client_res.headers["cookie"] = res.headers["cookie"];
       }
 
       res.pipe(client_res, {
@@ -384,11 +385,12 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
             {
               // Grab the token 
               tokenData.token2 = obj2.data.auth_token;
-              console.log("Received Json response with auth token: " + tokenData.token2);
+              console.log("Received Json response 2 with auth token: " + tokenData.token2);
 
               if(tokenData.token1 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
+                console.log("Setting token map: " );
               }
             }
           }
@@ -569,7 +571,7 @@ function onRequestS(client_req, client_res) {
     }
   }
 
-  console.log("Mirroring actual headers 2: " + headers2);
+  console.log("Mirroring actual headers 2: " + JSON.stringify(headers2) );
 
 
 
@@ -631,10 +633,11 @@ function onRequestS(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token1 = obj.data.auth_token;
-              console.log("Received Json response with auth token: " + tokenData.token1);
+              console.log("Received https Json response 1 with auth token: " + tokenData.token1);
               if(tokenData.token2 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
+                console.log("Setting token map 1 https");
 
               }
             }
@@ -733,10 +736,11 @@ function onRequestS(client_req, client_res) {
             {
               // Grab the token 
               tokenData.token2 = obj2.data.auth_token;
-              console.log("Received Json response with auth token: " + tokenData.token2);
+              console.log("Received https Json response 2 with auth token: " + tokenData.token2);
               if(tokenData.token1 != null)
               {
                 tokenMap[tokenData.token1] = tokenData.token2;
+                console.log("Setting token map 2 https");
               }
             }
           }
