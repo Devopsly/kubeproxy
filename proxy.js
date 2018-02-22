@@ -73,6 +73,7 @@ function onRequest(client_req, client_res) {
 
   var requestData = '';
 
+/*
   client_req.on('data', function(chunk) {
     requestData += chunk;
   });
@@ -80,7 +81,7 @@ function onRequest(client_req, client_res) {
     console.log('Request data: ' + requestData);
     logger.info('Mirroring: Request data: ' + requestData);
   });
-
+*/
 
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
@@ -215,11 +216,25 @@ function onRequest(client_req, client_res) {
     cookie2: ""
   }
 
+
+  console.log("Mirroring proxy1 options : " + JSON.stringify(options1) );
+
+  logger.info("Mirroring: proxy1 options : " + JSON.stringify(options1) );
+
+
+  console.log("Mirroring proxy2 options : " + JSON.stringify(options2) );
+
+  logger.info("Mirroring: proxy2 options : " + JSON.stringify(options2) );
+
   var proxy1 = https.request(options1, function (res) {
 
     // console.log("Request unique Id is " + uniqueId);
     // console.log(res.statusCode);
     // console.log(JSON.stringify(res.headers));
+
+    console.log("Res received: " );
+
+    logger.info("Mirroring: Res received: " );
 
     var obj = 
     {
@@ -358,6 +373,9 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
 
     var proxy2 = https.request(options2, function (res2) {
 
+       console.log("Res 2 received: " );
+
+    logger.info("Mirroring: Res 2 received: " );
     var obj2 = 
     {
       mirroring_unique_id: uniqueId,
@@ -484,6 +502,7 @@ function onRequestS(client_req, client_res) {
 
   var requestData = '';
 
+/*
   client_req.on('data', function(chunk) {
     requestData += chunk;
   });
@@ -492,7 +511,7 @@ function onRequestS(client_req, client_res) {
     logger.info('Mirroring: Https Request data: ' + requestData);
   });
 
-
+*/
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
 
@@ -608,7 +627,22 @@ function onRequestS(client_req, client_res) {
   };
 
 
+
+  console.log("Mirroring proxy1 options : " + JSON.stringify(options1) );
+
+  logger.info("Mirroring: proxy1 options : " + JSON.stringify(options1) );
+
+
+  console.log("Mirroring proxy2 options : " + JSON.stringify(options2) );
+
+  logger.info("Mirroring: proxy2 options : " + JSON.stringify(options2) );
+
+
   var proxy1 = https.request(options1, function (res) {
+
+     console.log("Res received: " );
+
+    logger.info("Mirroring: Res received: " );
 
      var obj = 
     {
@@ -727,6 +761,10 @@ function onRequestS(client_req, client_res) {
   requestResponseData.timeRequest2Made = (new Date()).getTime();
 
   var proxy2 = https.request(options2, function (res2) {
+
+     console.log("Res 2 received: " );
+
+    logger.info("Mirroring: Res 2 received: " );
     var obj2 = 
     {
       mirroring_unique_id: uniqueId,
