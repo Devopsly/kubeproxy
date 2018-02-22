@@ -36,8 +36,8 @@ const logger = new Logger({
 
 var options = 
 {
-   // cert: fs.readFileSync('../ssl/test.com.crt'),
-   // key: fs.readFileSync('../ssl/test.com.key')
+   //cert: fs.readFileSync('../ssl/test.com.crt'),
+   //key: fs.readFileSync('../ssl/test.com.key')
   cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
   key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
 };
@@ -71,6 +71,16 @@ var cookieMap = {};
 function onRequest(client_req, client_res) {
   
 
+  var requestData = '';
+
+  client_req.on('data', function(chunk) {
+    requestData += chunk;
+  });
+  client_req.on('end', function() {
+    console.log('Request data: ' + requestData);
+    logger.info('Mirroring: Request data: ' + requestData);
+  });
+
 
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
@@ -79,6 +89,7 @@ function onRequest(client_req, client_res) {
 
   console.log('Http request to ' + client_req.url);
   console.log(client_req.headers);
+
   logger.info('Mirroring: Http request to ' + client_req.url);
   logger.info('Mirroring: Client request headers: ' + JSON.stringify(client_req.headers) );
 
@@ -232,6 +243,10 @@ function onRequest(client_req, client_res) {
         //res.setEncoding('utf8');
         responseData += chunk;
       });
+
+      res.on('error', function (error) {
+          console.log("response error " + error.message);
+      });
       res.on('end', function () {
         var contentType = res.headers["content-type"].toLowerCase();
         if (contentType.indexOf("image") == -1 )
@@ -347,6 +362,11 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
         //res.setEncoding('utf8');
         responseData += chunk;
       });
+
+      res2.on('error', function (error) {
+          console.log("response error " + error.message);
+      });
+
       res2.on('end', function () {
         var contentType = res2.headers["content-type"].toLowerCase();
         if (contentType.indexOf("image") == -1 )
@@ -436,13 +456,24 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
 
 function onRequestS(client_req, client_res) {
 
+  var requestData = '';
+
+  client_req.on('data', function(chunk) {
+    requestData += chunk;
+  });
+  client_req.on('end', function() {
+    console.log('Https Request data: ' + requestData);
+    logger.info('Mirroring: Https Request data: ' + requestData);
+  });
+
+
   client_req.uniqueLogId = (new Date()).getTime();
   // console.log(client_req.uniqueLogId);
 
   console.log("Https Request to " + client_req.url);
   console.log(client_req.headers);
   logger.info('Mirroring: Https request to ' + client_req.url);
-  logger.info('Mirroring: client request headers: ' + client_req.headers);
+  logger.info('Mirroring: client request headers: ' + JSON.stringify(client_req.headers ) );
 
   var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
@@ -571,6 +602,12 @@ function onRequestS(client_req, client_res) {
         //res.setEncoding('utf8');
         responseData += chunk;
       });
+
+      res.on('error', function (error) {
+          console.log("response error " + error.message);
+      });
+
+
       res.on('end', function () {
         var contentType = res.headers["content-type"].toLowerCase();
         if (contentType.indexOf("image") == -1 )
@@ -667,6 +704,12 @@ function onRequestS(client_req, client_res) {
         //res.setEncoding('utf8');
         responseData += chunk;
       });
+
+      res2.on('error', function (error) {
+          console.log("response error " + error.message);
+      });
+
+
       res2.on('end', function () {
         var contentType = res2.headers["content-type"].toLowerCase();
         if (contentType.indexOf("image") == -1 )
@@ -742,3 +785,34 @@ function onRequestS(client_req, client_res) {
 
 
 }
+
+
+
+/*
+Machine login sim code
+machineAuth = new Promise((done) => {
+  request({
+    method: 'POST',
+    url: `${serverUrl}/machines/sign_in?serial=${MACHINE_SERIAL}&password=cb4778d132c966c4d2c8089eb8ca51c20fc91ad35652d9848cbd9ab8c34fd0dd`,
+  }, (error, response) => {
+    done(JSON.parse(response.body).auth_token);
+  })
+
+then we make requests with the machine auth like this 
+
+machineAuth.then(token => {
+    request({
+      method: 'POST',
+      url: `${serverUrl}/api/machines/owner?token=${req.body.token}`,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }, (err, result) => {
+      console.log(result.body);
+      res.status(200); // left in to allow easy adding of failures at this step
+      res.send(fake_connection_status);
+    })
+  });
+
+
+  */
