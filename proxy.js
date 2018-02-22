@@ -203,7 +203,8 @@ function onRequest(client_req, client_res) {
 
     var obj = 
     {
-      id: uniqueId,
+      mirroring_unique_id: uniqueId,
+      content_type: res.headers["content-type"],
       source: sourceIp,
       request_url: client_req.url,
       response_code: res.statusCode,
@@ -288,7 +289,7 @@ function onRequest(client_req, client_res) {
           if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
-            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) );
+            logger.info( JSON.stringify(requestResponseData) );
           }
         }
       });      
@@ -326,7 +327,8 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
 
     var obj2 = 
     {
-      id: uniqueId,
+      mirroring_unique_id: uniqueId,
+      content_type: res2.headers["content-type"],
       source: sourceIp,
       request_url: client_req.url,
       response_code: res2.statusCode,
@@ -400,7 +402,7 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
           if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
-            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) ) ;
+            logger.info(JSON.stringify(requestResponseData) ) ;
           }
 
         }
@@ -534,7 +536,8 @@ function onRequestS(client_req, client_res) {
 
      var obj = 
     {
-      id: uniqueId,
+      mirroring_unique_id: uniqueId,
+      content_type: res.headers["content-type"],
       source: sourceIp,
       request_url: client_req.url,
       response_code: res.statusCode,
@@ -545,6 +548,7 @@ function onRequestS(client_req, client_res) {
 
     if(res.statusCode == 301 || res.statusCode == 302 || res.statusCode == 404)
     {
+      console.log("Redirect https 1 to " + res.headers.location);
         client_res.writeHead(res.statusCode, {
           location: res.headers.location
         });
@@ -610,7 +614,7 @@ function onRequestS(client_req, client_res) {
           if(requestResponseData.responseData2 != null)
           {
             console.log(requestResponseData);
-            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) );
+            logger.info(JSON.stringify(requestResponseData) );
           }
         }
       });
@@ -632,7 +636,8 @@ function onRequestS(client_req, client_res) {
   var proxy2 = https.request(options2, function (res2) {
     var obj2 = 
     {
-      id: uniqueId,
+      mirroring_unique_id: uniqueId,
+      content_type: res2.headers["content-type"],
       source: sourceIp,
       request_url: client_req.url,
       response_code: res2.statusCode,
@@ -642,10 +647,8 @@ function onRequestS(client_req, client_res) {
     
    if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
     {
-        client_res.writeHead(res2.statusCode, {
-          location: res2.headers.location
-        });
-        client_res.end();
+      console.log("Redirect https 2 to " + res2.headers.location);
+
     }
     else
     {
@@ -711,7 +714,7 @@ function onRequestS(client_req, client_res) {
           if(requestResponseData.responseData1 != null)
           {
             console.log(requestResponseData);
-            logger.info('Mirroring: Response comparison: ' + JSON.stringify(requestResponseData) );
+            logger.info(JSON.stringify(requestResponseData) );
           }
 
         }
