@@ -236,10 +236,21 @@ function onRequest(client_req, client_res) {
 
     logger.info("Mirroring: Res received: " );
 
+
+    var contentType = "";
+    if(res.headers)
+    {
+      if(res.headers.hasOwnProperty("content-type"))
+      {
+        contentType = res.headers["content-type"];
+      }
+
+    }
+
     var obj = 
     {
       mirroring_unique_id: uniqueId,
-      content_type: res.headers["content-type"],
+      content_type: contentType,
       source: sourceIp,
       request_url: client_req.url,
       response_code: res.statusCode,
@@ -376,10 +387,22 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
        console.log("Res 2 received: " );
 
     logger.info("Mirroring: Res 2 received: " );
+
+    var contentType = "";
+    if(res2.headers)
+    {
+      if(res2.headers.hasOwnProperty("content-type"))
+      {
+        contentType = res2.headers["content-type"];
+      }
+
+    }
+
+
     var obj2 = 
     {
       mirroring_unique_id: uniqueId,
-      content_type: res2.headers["content-type"],
+      content_type: contentType,
       source: sourceIp,
       request_url: client_req.url,
       response_code: res2.statusCode,
@@ -644,10 +667,22 @@ function onRequestS(client_req, client_res) {
 
     logger.info("Mirroring: Res received: " );
 
+    var contentType = "";
+    if(res.headers)
+    {
+      if(res.headers.hasOwnProperty("content-type"))
+      {
+        contentType = res.headers["content-type"];
+      }
+
+    }
+
+
+
      var obj = 
     {
       mirroring_unique_id: uniqueId,
-      content_type: res.headers["content-type"],
+      content_type: contentType,
       source: sourceIp,
       request_url: client_req.url,
       response_code: res.statusCode,
@@ -765,10 +800,22 @@ function onRequestS(client_req, client_res) {
      console.log("Res 2 received: " );
 
     logger.info("Mirroring: Res 2 received: " );
+
+    var contentType = "";
+    if(res2.headers)
+    {
+      if(res2.headers.hasOwnProperty("content-type"))
+      {
+        contentType = res2.headers["content-type"];
+      }
+
+    }
+
+
     var obj2 = 
     {
       mirroring_unique_id: uniqueId,
-      content_type: res2.headers["content-type"],
+      content_type: contentType,
       source: sourceIp,
       request_url: client_req.url,
       response_code: res2.statusCode,
