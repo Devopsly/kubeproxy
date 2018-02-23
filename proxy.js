@@ -397,7 +397,7 @@ function onRequest(client_req, client_res) {
         }
 
 
-        if(client_req.url.indexOf("lid_image" != -1))
+        if( client_req.url.indexOf("lid_image") != -1 )
         {
           logger.info("Mirroring: lid_image response end");
           client_res.writeHead(200);
@@ -875,10 +875,12 @@ function onRequestS(client_req, client_res) {
       logger.info("Mirroring: non redirect response 4");
 
 
+/*
       if(res.headers)
       {
         client_res.headers = res.headers;
       }
+*/
       
 
       if(res.headers && res.headers.hasOwnProperty("cookie"))
@@ -900,7 +902,7 @@ function onRequestS(client_req, client_res) {
 
 
 
-      if(client_req.url.indexOf("lid_image" != -1))
+      if( client_req.url.indexOf("lid_image") != -1 )
       {
         logger.info("Mirroring: lid_image response end");
         client_res.writeHead(200);
