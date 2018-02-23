@@ -233,9 +233,12 @@ function onRequest(client_req, client_res) {
     // console.log(res.statusCode);
     // console.log(JSON.stringify(res.headers));
 
-    console.log("Res received, headers "  + JSON.stringify(res.headers) );
+    if(res.headers)
+    {
+      console.log("Res received, headers "  + JSON.stringify(res.headers) );
 
-    logger.info("Mirroring: Res received headers: "  + JSON.stringify(res.headers) );
+      logger.info("Mirroring: Res received headers: "  + JSON.stringify(res.headers) );
+    }
 
     if(res)
     {
@@ -357,14 +360,15 @@ function onRequest(client_req, client_res) {
         });      
 
 
-
-
-        client_res.headers = res.headers;
-
-        if(res.headers.hasOwnProperty("cookie"))
+        if(res.headers && res.headers.hasOwnProperty("cookie"))
         {
-          client_res.headers["cookie"] = res.headers["cookie"];
+            client_res.headers["cookie"] = res.headers["cookie"];
         }
+        if(res.headers && res.headers.hasOwnProperty("authorization"))
+        {
+            client_res.headers["authorization"] = res.headers["authorization"];
+        }
+
 
         res.pipe(client_res, {
           end: true
@@ -395,8 +399,11 @@ function onRequest(client_req, client_res) {
 
     var proxy2 = https.request(options2, function (res2) {
 
-      console.log("Res 2 received headers: "  + JSON.stringify(res2.headers) );
-      logger.info("Mirroring: Res 2 received headers: "  + JSON.stringify(res2.headers) );
+      if(res2.headers)
+      {
+        console.log("Res 2 received headers: "  + JSON.stringify(res2.headers) );
+        logger.info("Mirroring: Res 2 received headers: "  + JSON.stringify(res2.headers) );
+      }
 
       if(res2)
       {
@@ -685,9 +692,11 @@ function onRequestS(client_req, client_res) {
 
   var proxy1 = https.request(options1, function (res) {
 
-    console.log("Res received: headers "  + JSON.stringify(res.headers) );
-    logger.info("Mirroring: Res received: headers "  + JSON.stringify(res.headers) );
-
+    if(res.headers)
+    {
+      console.log("Res received: headers "  + JSON.stringify(res.headers) );
+      logger.info("Mirroring: Res received: headers "  + JSON.stringify(res.headers) );
+    }
     if(res)
     {
 
@@ -818,11 +827,15 @@ function onRequestS(client_req, client_res) {
 
 
 
-      client_res.headers = res.headers;
+      
 
-      if(res.headers.hasOwnProperty("cookie"))
+      if(res.headers && res.headers.hasOwnProperty("cookie"))
       {
           client_res.headers["cookie"] = res.headers["cookie"];
+      }
+      if(res.headers && res.headers.hasOwnProperty("authorization"))
+      {
+          client_res.headers["authorization"] = res.headers["authorization"];
       }
 
 
@@ -853,10 +866,14 @@ function onRequestS(client_req, client_res) {
 
   var proxy2 = https.request(options2, function (res2) {
 
-     console.log("Res 2 received, headers: " + JSON.stringify(res2.headers) );
 
-    logger.info("Mirroring: Res 2 received: "  + JSON.stringify(res2.headers) );
+    
 
+    if(res2.headers)
+    {
+      console.log("Res 2 received, headers: " + JSON.stringify(res2.headers) );
+      logger.info("Mirroring: Res 2 received: "  + JSON.stringify(res2.headers) );
+    }
 
     if(res2)
     {
