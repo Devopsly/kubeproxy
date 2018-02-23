@@ -236,138 +236,146 @@ function onRequest(client_req, client_res) {
 
     logger.info("Mirroring: Res received: " );
 
-
-    var contentType = "";
-    if(res.headers)
+    if(res)
     {
-      if(res.headers.hasOwnProperty("content-type"))
+
+      var contentType = "";
+      if(res.headers)
       {
-        contentType = res.headers["content-type"];
+        if(res.headers.hasOwnProperty("content-type"))
+        {
+          contentType = res.headers["content-type"];
+        }
+
       }
 
-    }
+      var obj = 
+      {
+        mirroring_unique_id: uniqueId,
+        content_type: contentType,
+        source: sourceIp,
+        request_url: client_req.url,
+        response_code: res.statusCode,
+        response_header: res.headers,
+        data: null
+      };
+      
+      // console.log("Response 1: " + JSON.stringify(obj) );
 
-    var obj = 
-    {
-      mirroring_unique_id: uniqueId,
-      content_type: contentType,
-      source: sourceIp,
-      request_url: client_req.url,
-      response_code: res.statusCode,
-      response_header: res.headers,
-      data: null
-    };
-    
-    // console.log("Response 1: " + JSON.stringify(obj) );
+      //console.log(util.inspect(res, false, null));
 
-    //console.log(util.inspect(res, false, null));
-
-    if(res.statusCode == 301 || res.statusCode == 302 || res.statusCode == 404)
-    {
-        console.log("Redirect 1 to " + res.headers.location);
-        logger.info("Mirroring: Redirect 1 to " + res.headers.location);
-        client_res.writeHead(res.statusCode, {
-          location: res.headers.location
+      if(res.statusCode == 301 || res.statusCode == 302 || res.statusCode == 404)
+      {
+          console.log("Redirect 1 to " + res.headers.location);
+          logger.info("Mirroring: Redirect 1 to " + res.headers.location);
+          client_res.writeHead(res.statusCode, {
+            location: res.headers.location
+          });
+          client_res.end();
+      }
+      else
+      {
+        logger.info("Mirroring: non redirect response");
+        var responseData = '';
+        res.on('data', function (chunk) {
+          //res.setEncoding('utf8');
+          responseData += chunk;
         });
-        client_res.end();
-    }
+
+        res.on('error', function (error) {
+            console.log("response error " + error.message);
+            logger.info("Mirroring: response error " + error.message);
+        });
+        res.on('end', function () {
+          console.log("Res http ended ");
+          logger.info("Res http ended");
+          contentType = contentType.toLowerCase();
+          if (true) // (contentType.indexOf("image") == -1 )
+          //if (contentType.indexOf("json") != -1 )
+          {
+            if(contentType.toLowerCase().indexOf("json") != -1 )
+            {
+              obj.data = JSON.parse(responseData);
+              if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the token 
+                tokenData.token1 = obj.data.auth_token;
+                console.log("Received Json response 1 with auth token: " + tokenData.token1);
+                logger.info("Mirroring: Received Json response 1 with auth token: " + tokenData.token1);
+
+                if(tokenData.token2 != null)
+                {
+                  tokenMap[tokenData.token1] = tokenData.token2;
+                  console.log("Setting token map: " );
+                  logger.info("Mirroring: Setting token map: " );
+                }
+              }
+            }
+            else
+            {
+              obj.data = responseData;
+              if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the cookie
+                cookieData.cookie1 = res.headers["cookie"];
+                console.log("Received non Json response  1 with cookie: " + cookieData.cookie1);
+                logger.info("Mirroring: Received non Json response  1 with cookie: " + cookieData.cookie1);
+
+                if(cookieData.cookie2 != null)
+                {
+                  cookieMap[cookieData.cookie1] = cookieData.cookie2;
+                }
+              }
+              else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the token 
+                tokenData.token1 = JSON.parse(obj.data.auth_token);
+                console.log("Received non Json response 1 with auth token: " + tokenData.token1);
+                 logger.info("Mirroring: Received non Json response 1 with auth token: " + tokenData.token1);
+                if(tokenData.token2 != null)
+                {
+                  tokenMap[tokenData.token1] = tokenData.token2;
+
+                }
+              }
+            }
+
+            var timeNow = (new Date()).getTime();
+            requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
+
+            // console.log(JSON.stringify(obj) );
+            // console.log("==================Response data from production is: " + JSON.stringify(obj));
+            requestResponseData.responseData1 = obj;
+
+            if(requestResponseData.responseData2 != null)
+            {
+              console.log(requestResponseData);
+              logger.info( JSON.stringify(requestResponseData) );
+            }
+          }
+        });      
+
+
+
+
+        if(res.headers.hasOwnProperty("cookie"))
+        {
+          client_res.headers["cookie"] = res.headers["cookie"];
+        }
+
+        res.pipe(client_res, {
+          end: true
+        });
+
+
+      }
+
+    } // if res not null
     else
     {
-      
-      var responseData = '';
-      res.on('data', function (chunk) {
-        //res.setEncoding('utf8');
-        responseData += chunk;
-      });
-
-      res.on('error', function (error) {
-          console.log("response error " + error.message);
-          logger.info("Mirroring: response error " + error.message);
-      });
-      res.on('end', function () {
-        console.log("Res http ended ");
-        logger.info("Res http ended");
-        contentType = contentType.toLowerCase();
-        if (true) // (contentType.indexOf("image") == -1 )
-        //if (contentType.indexOf("json") != -1 )
-        {
-          if(contentType.toLowerCase().indexOf("json") != -1 )
-          {
-            obj.data = JSON.parse(responseData);
-            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the token 
-              tokenData.token1 = obj.data.auth_token;
-              console.log("Received Json response 1 with auth token: " + tokenData.token1);
-              logger.info("Mirroring: Received Json response 1 with auth token: " + tokenData.token1);
-
-              if(tokenData.token2 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-                console.log("Setting token map: " );
-                logger.info("Mirroring: Setting token map: " );
-              }
-            }
-          }
-          else
-          {
-            obj.data = responseData;
-            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the cookie
-              cookieData.cookie1 = res.headers["cookie"];
-              console.log("Received non Json response  1 with cookie: " + cookieData.cookie1);
-              logger.info("Mirroring: Received non Json response  1 with cookie: " + cookieData.cookie1);
-
-              if(cookieData.cookie2 != null)
-              {
-                cookieMap[cookieData.cookie1] = cookieData.cookie2;
-              }
-            }
-            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the token 
-              tokenData.token1 = JSON.parse(obj.data.auth_token);
-              console.log("Received non Json response 1 with auth token: " + tokenData.token1);
-               logger.info("Mirroring: Received non Json response 1 with auth token: " + tokenData.token1);
-              if(tokenData.token2 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-
-              }
-            }
-          }
-
-          var timeNow = (new Date()).getTime();
-          requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
-
-          // console.log(JSON.stringify(obj) );
-          // console.log("==================Response data from production is: " + JSON.stringify(obj));
-          requestResponseData.responseData1 = obj;
-
-          if(requestResponseData.responseData2 != null)
-          {
-            console.log(requestResponseData);
-            logger.info( JSON.stringify(requestResponseData) );
-          }
-        }
-      });      
-
-
-
-
-      if(res.headers.hasOwnProperty("cookie"))
-      {
-        client_res.headers["cookie"] = res.headers["cookie"];
-      }
-
-      res.pipe(client_res, {
-        end: true
-      });
-
-
+      console.log("Res null" );
+      logger.info("Mirroring: Res null" );
     }
-
 
 
 
@@ -384,120 +392,131 @@ function onRequest(client_req, client_res) {
 
     var proxy2 = https.request(options2, function (res2) {
 
-       console.log("Res 2 received: " );
+      console.log("Res 2 received: " );
+      logger.info("Mirroring: Res 2 received: " );
 
-    logger.info("Mirroring: Res 2 received: " );
-
-    var contentType = "";
-    if(res2.headers)
-    {
-      if(res2.headers.hasOwnProperty("content-type"))
+      if(res2)
       {
-        contentType = res2.headers["content-type"];
-      }
 
-    }
-
-
-    var obj2 = 
-    {
-      mirroring_unique_id: uniqueId,
-      content_type: contentType,
-      source: sourceIp,
-      request_url: client_req.url,
-      response_code: res2.statusCode,
-      response_header: res2.headers,
-      data: null
-    };
-
-    if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
-    {
-      console.log("Redirect 2 to " + res2.headers.location);
-       logger.info("Mirroring: Redirect 2 to " + res2.headers.location);
-    }
-    else
-    {
-      var responseData = '';
-      res2.on('data', function (chunk) {
-        //res.setEncoding('utf8');
-        responseData += chunk;
-      });
-
-      res2.on('error', function (error) {
-          console.log("response error " + error.message);
-          logger.info("Mirroring: response error " + error.message);
-      });
-
-      res2.on('end', function () {
-        console.log("Res2 http ended ");
-        logger.info("Res2 http ended");
-        contentType = contentType.toLowerCase();
-        if (true) // (contentType.indexOf("image") == -1 )
-        //if (contentType.indexOf("json") != -1 )
+        var contentType = "";
+        if(res2.headers)
         {
-          if(contentType.toLowerCase().indexOf("json") != -1 )
+          if(res2.headers.hasOwnProperty("content-type"))
           {
-            obj2.data = JSON.parse(responseData);
-            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the token 
-              tokenData.token2 = obj2.data.auth_token;
-              console.log("Received Json response 2 with auth token: " + tokenData.token2);
-              logger.info("Mirroring: Received Json response 2 with auth token: " + tokenData.token2);
-              if(tokenData.token1 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-                console.log("Setting token map: " );
-                logger.info("Mirroring: Setting token map: " );
-              }
-            }
-          }
-          else
-          {
-            obj2.data = responseData;
-            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the cookie
-              cookieData.cookie2 = res2.headers["Cookie"];
-              console.log("Received non Json response with cookie: " + cookieData.cookie2);
-              logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
-
-              if(cookieData.cookie1 != null)
-              {
-                cookieMap[cookieData.cookie1] = cookieData.cookie2;
-              }
-            }
-            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the token 
-              tokenData.token2 = JSON.parse(obj2.data.auth_token);
-              console.log("Received non Json response with auth token: " + tokenData.token2);
-              logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token2);
-              if(tokenData.token1 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-
-              }
-            }
-          }
-
-          var timeNow = (new Date()).getTime();
-          requestResponseData.response2LatencyMilliseconds = timeNow - requestResponseData.timeRequest2Made;
-
-          requestResponseData.responseData2 = obj2;
-
-          if(requestResponseData.responseData1 != null)
-          {
-            console.log(requestResponseData);
-            logger.info(JSON.stringify(requestResponseData) ) ;
+            contentType = res2.headers["content-type"];
           }
 
         }
-      });      
 
-      // dont pipe second response
 
-    }
+        var obj2 = 
+        {
+          mirroring_unique_id: uniqueId,
+          content_type: contentType,
+          source: sourceIp,
+          request_url: client_req.url,
+          response_code: res2.statusCode,
+          response_header: res2.headers,
+          data: null
+        };
+
+
+
+        if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
+        {
+          console.log("Redirect 2 to " + res2.headers.location);
+          logger.info("Mirroring: Redirect 2 to " + res2.headers.location);
+        }
+        else
+        {
+          logger.info("Mirroring: non redirect response");
+          var responseData = '';
+          res2.on('data', function (chunk) {
+            //res.setEncoding('utf8');
+            responseData += chunk;
+          });
+
+          res2.on('error', function (error) {
+              console.log("response error " + error.message);
+              logger.info("Mirroring: response error " + error.message);
+          });
+
+          res2.on('end', function () {
+            console.log("Res2 http ended ");
+            logger.info("Res2 http ended");
+            contentType = contentType.toLowerCase();
+            if (true) // (contentType.indexOf("image") == -1 )
+            //if (contentType.indexOf("json") != -1 )
+            {
+              if(contentType.toLowerCase().indexOf("json") != -1 )
+              {
+                obj2.data = JSON.parse(responseData);
+                if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+                {
+                  // Grab the token 
+                  tokenData.token2 = obj2.data.auth_token;
+                  console.log("Received Json response 2 with auth token: " + tokenData.token2);
+                  logger.info("Mirroring: Received Json response 2 with auth token: " + tokenData.token2);
+                  if(tokenData.token1 != null)
+                  {
+                    tokenMap[tokenData.token1] = tokenData.token2;
+                    console.log("Setting token map: " );
+                    logger.info("Mirroring: Setting token map: " );
+                  }
+                }
+              }
+              else
+              {
+                obj2.data = responseData;
+                if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+                {
+                  // Grab the cookie
+                  cookieData.cookie2 = res2.headers["Cookie"];
+                  console.log("Received non Json response with cookie: " + cookieData.cookie2);
+                  logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
+
+                  if(cookieData.cookie1 != null)
+                  {
+                    cookieMap[cookieData.cookie1] = cookieData.cookie2;
+                  }
+                }
+                else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+                {
+                  // Grab the token 
+                  tokenData.token2 = JSON.parse(obj2.data.auth_token);
+                  console.log("Received non Json response with auth token: " + tokenData.token2);
+                  logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token2);
+                  if(tokenData.token1 != null)
+                  {
+                    tokenMap[tokenData.token1] = tokenData.token2;
+
+                  }
+                }
+              }
+
+              var timeNow = (new Date()).getTime();
+              requestResponseData.response2LatencyMilliseconds = timeNow - requestResponseData.timeRequest2Made;
+
+              requestResponseData.responseData2 = obj2;
+
+              if(requestResponseData.responseData1 != null)
+              {
+                console.log(requestResponseData);
+                logger.info(JSON.stringify(requestResponseData) ) ;
+              }
+
+            }
+          });      
+
+          // dont pipe second response
+
+        }
+      } // if res 2 not null
+      else
+      {
+        console.log("Res2 null" );
+        logger.info("Mirroring: Res2 null" );
+      }
 
     
   });
@@ -663,129 +682,145 @@ function onRequestS(client_req, client_res) {
 
   var proxy1 = https.request(options1, function (res) {
 
-     console.log("Res received: " );
-
+    console.log("Res received: " );
     logger.info("Mirroring: Res received: " );
 
-    var contentType = "";
-    if(res.headers)
+    if(res)
     {
-      if(res.headers.hasOwnProperty("content-type"))
+
+      console.log("Res is non null" );
+      logger.info("Mirroring: Res is non null" );
+      
+      var contentType = "";
+      if(res.headers)
       {
-        contentType = res.headers["content-type"];
+        if(res.headers.hasOwnProperty("content-type"))
+        {
+          contentType = res.headers["content-type"];
+        }
+
       }
 
-    }
 
 
+       var obj = 
+      {
+        mirroring_unique_id: uniqueId,
+        content_type: contentType,
+        source: sourceIp,
+        request_url: client_req.url,
+        response_code: res.statusCode,
+        response_header: res.headers,
+        data: null
 
-     var obj = 
-    {
-      mirroring_unique_id: uniqueId,
-      content_type: contentType,
-      source: sourceIp,
-      request_url: client_req.url,
-      response_code: res.statusCode,
-      response_header: res.headers,
-      data: null
+      };
 
-    };
-
-    if(res.statusCode == 301 || res.statusCode == 302 || res.statusCode == 404)
-    {
-      console.log("Redirect https 1 to " + res.headers.location);
-      logger.info("Mirroring:  Redirect https 1 to " + res.headers.location);
-        client_res.writeHead(res.statusCode, {
-          location: res.headers.location
+      if(res.statusCode == 301 || res.statusCode == 302 || res.statusCode == 404)
+      {
+        console.log("Redirect https 1 to " + res.headers.location);
+        logger.info("Mirroring:  Redirect https 1 to " + res.headers.location);
+          client_res.writeHead(res.statusCode, {
+            location: res.headers.location
+          });
+          client_res.end();
+      }
+      else
+      {
+        logger.info("Mirroring: non redirect response");
+        var responseData = '';
+        res.on('data', function (chunk) {
+          //res.setEncoding('utf8');
+          responseData += chunk;
         });
-        client_res.end();
-    }
+
+        res.on('error', function (error) {
+            console.log("response error " + error.message);
+            logger.info("Mirroring:  response error " + error.message);
+        });
+
+
+        res.on('end', function () {
+          console.log("Res https ended ");
+          logger.info("Res https ended");
+          //var contentType = res.headers["content-type"].toLowerCase();
+          contentType = contentType.toLowerCase();
+          if (true) //  contentType.indexOf("image") == -1 )
+          //if (contentType.indexOf("json") != -1 )
+          {
+            if(contentType.toLowerCase().indexOf("json") != -1 )
+            {
+              obj.data = JSON.parse(responseData);
+              if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the token 
+                tokenData.token1 = obj.data.auth_token;
+                console.log("Received https Json response 1 with auth token: " + tokenData.token1);
+                logger.info("Mirroring: Received https Json response 1 with auth token: " + tokenData.token1);
+                if(tokenData.token2 != null)
+                {
+                  tokenMap[tokenData.token1] = tokenData.token2;
+                  console.log("Setting token map 1 https");
+                  logger.info("Mirroring: Setting token map 1 https");
+
+                }
+              }
+            }
+            else
+            {
+              obj.data = responseData;
+              if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the cookie
+                cookieData.cookie1 = res.headers["Cookie"];
+                console.log("Received non Json response with cookie: " + cookieData.cookie1);
+                logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie1);
+
+                if(cookieData.cookie2 != null)
+                {
+                  cookieMap[cookieData.cookie1] = cookieData.cookie2;
+                }
+              }
+              else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the token 
+                tokenData.token1 = JSON.parse(obj.data.auth_token);
+                console.log("Received non Json response with auth token: " + tokenData.token1);
+                logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token1);
+                if(tokenData.token2 != null)
+                {
+                  tokenMap[tokenData.token1] = tokenData.token2;
+                  console.log("Setting token map  https");
+                  logger.info("Mirroring:  Setting token map https");
+
+                }
+              }
+            }
+
+            var timeNow = (new Date()).getTime();
+            requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
+            requestResponseData.responseData1 = obj;
+            if(requestResponseData.responseData2 != null)
+            {
+              console.log(requestResponseData);
+              logger.info(JSON.stringify(requestResponseData) );
+            }
+          }
+        });
+      }   
+
+      res.pipe(client_res, {
+        end: true
+      });
+
+
+    } // end if res
     else
     {
-      var responseData = '';
-      res.on('data', function (chunk) {
-        //res.setEncoding('utf8');
-        responseData += chunk;
-      });
-
-      res.on('error', function (error) {
-          console.log("response error " + error.message);
-          logger.info("Mirroring:  response error " + error.message);
-      });
+      console.log("Res null" );
+      logger.info("Mirroring: Res null" );
+    }
 
 
-      res.on('end', function () {
-        console.log("Res https ended ");
-        logger.info("Res https ended");
-        //var contentType = res.headers["content-type"].toLowerCase();
-        contentType = contentType.toLowerCase();
-        if (true) //  contentType.indexOf("image") == -1 )
-        //if (contentType.indexOf("json") != -1 )
-        {
-          if(contentType.toLowerCase().indexOf("json") != -1 )
-          {
-            obj.data = JSON.parse(responseData);
-            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the token 
-              tokenData.token1 = obj.data.auth_token;
-              console.log("Received https Json response 1 with auth token: " + tokenData.token1);
-              logger.info("Mirroring: Received https Json response 1 with auth token: " + tokenData.token1);
-              if(tokenData.token2 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-                console.log("Setting token map 1 https");
-                logger.info("Mirroring: Setting token map 1 https");
-
-              }
-            }
-          }
-          else
-          {
-            obj.data = responseData;
-            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the cookie
-              cookieData.cookie1 = res.headers["Cookie"];
-              console.log("Received non Json response with cookie: " + cookieData.cookie1);
-              logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie1);
-
-              if(cookieData.cookie2 != null)
-              {
-                cookieMap[cookieData.cookie1] = cookieData.cookie2;
-              }
-            }
-            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
-            {
-              // Grab the token 
-              tokenData.token1 = JSON.parse(obj.data.auth_token);
-              console.log("Received non Json response with auth token: " + tokenData.token1);
-              logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token1);
-              if(tokenData.token2 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-                console.log("Setting token map  https");
-                logger.info("Mirroring:  Setting token map https");
-
-              }
-            }
-          }
-
-          var timeNow = (new Date()).getTime();
-          requestResponseData.response1LatencyMilliseconds = timeNow - requestResponseData.timeRequest1Made;
-          requestResponseData.responseData1 = obj;
-          if(requestResponseData.responseData2 != null)
-          {
-            console.log(requestResponseData);
-            logger.info(JSON.stringify(requestResponseData) );
-          }
-        }
-      });
-    }   
-
-    res.pipe(client_res, {
-      end: true
-    });
   });
 
   client_req.pipe(proxy1, {
@@ -802,119 +837,137 @@ function onRequestS(client_req, client_res) {
 
     logger.info("Mirroring: Res 2 received: " );
 
-    var contentType = "";
-    if(res2.headers)
+
+    if(res2)
     {
-      if(res2.headers.hasOwnProperty("content-type"))
+
+      console.log("Res 2is non null" );
+      logger.info("Mirroring: Res 2 is non null" );
+
+
+
+      var contentType = "";
+      if(res2.headers)
       {
-        contentType = res2.headers["content-type"];
+        if(res2.headers.hasOwnProperty("content-type"))
+        {
+          contentType = res2.headers["content-type"];
+        }
+
       }
 
-    }
+
+      var obj2 = 
+      {
+        mirroring_unique_id: uniqueId,
+        content_type: contentType,
+        source: sourceIp,
+        request_url: client_req.url,
+        response_code: res2.statusCode,
+        response_header: res2.headers,
+        data: null
+      };
+      
+     if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
+      {
+        console.log("Redirect https 2 to " + res2.headers.location);
+        logger.info("Mirroring: Redirect https 2 to " + res2.headers.location);
+      }
+      else
+      {
+        logger.info("Mirroring: non redirect response");
+        var responseData = '';
+        res2.on('data', function (chunk) {
+          //res.setEncoding('utf8');
+          responseData += chunk;
+        });
+
+        res2.on('error', function (error) {
+            console.log("response error " + error.message);
+        });
 
 
-    var obj2 = 
-    {
-      mirroring_unique_id: uniqueId,
-      content_type: contentType,
-      source: sourceIp,
-      request_url: client_req.url,
-      response_code: res2.statusCode,
-      response_header: res2.headers,
-      data: null
-    };
-    
-   if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
-    {
-      console.log("Redirect https 2 to " + res2.headers.location);
-      logger.info("Mirroring: Redirect https 2 to " + res2.headers.location);
-    }
-    else
-    {
-      var responseData = '';
-      res2.on('data', function (chunk) {
-        //res.setEncoding('utf8');
-        responseData += chunk;
-      });
+        res2.on('end', function () {
 
-      res2.on('error', function (error) {
-          console.log("response error " + error.message);
-      });
-
-
-      res2.on('end', function () {
-
-        console.log("Res2 https ended ");
-        logger.info("Res2 https ended");
-        contentType = contentType.toLowerCase();
-        if(true) // (contentType.indexOf("image") == -1 )
-        //if (contentType.indexOf("json") != -1 )
-        {
-          if(contentType.toLowerCase().indexOf("json") != -1 )
+          console.log("Res2 https ended ");
+          logger.info("Res2 https ended");
+          contentType = contentType.toLowerCase();
+          if(true) // (contentType.indexOf("image") == -1 )
+          //if (contentType.indexOf("json") != -1 )
           {
-            obj2.data = JSON.parse(responseData);
-            if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+            if(contentType.toLowerCase().indexOf("json") != -1 )
             {
-              // Grab the token 
-              tokenData.token2 = obj2.data.auth_token;
-              console.log("Received https Json response 2 with auth token: " + tokenData.token2);
-              logger.info("Mirroring: Received https Json response 2 with auth token: " + tokenData.token2);
-              if(tokenData.token1 != null)
+              obj2.data = JSON.parse(responseData);
+              if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
               {
-                tokenMap[tokenData.token1] = tokenData.token2;
-                console.log("Setting token map 2 https");
-                logger.info("Mirroring: Setting token map 2 https");
+                // Grab the token 
+                tokenData.token2 = obj2.data.auth_token;
+                console.log("Received https Json response 2 with auth token: " + tokenData.token2);
+                logger.info("Mirroring: Received https Json response 2 with auth token: " + tokenData.token2);
+                if(tokenData.token1 != null)
+                {
+                  tokenMap[tokenData.token1] = tokenData.token2;
+                  console.log("Setting token map 2 https");
+                  logger.info("Mirroring: Setting token map 2 https");
+                }
               }
             }
-          }
-          else
-          {
-            obj2.data = responseData;
-            if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
+            else
             {
-              // Grab the cookie
-              cookieData.cookie2 = res2.headers["Cookie"];
-              console.log("Received non Json response with cookie: " + cookieData.cookie2);
-              logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
-
-              if(cookieData.cookie1 != null)
+              obj2.data = responseData;
+              if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
               {
-                cookieMap[cookieData.cookie1] = cookieData.cookie2;
+                // Grab the cookie
+                cookieData.cookie2 = res2.headers["Cookie"];
+                console.log("Received non Json response with cookie: " + cookieData.cookie2);
+                logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
+
+                if(cookieData.cookie1 != null)
+                {
+                  cookieMap[cookieData.cookie1] = cookieData.cookie2;
+                }
+              }
+              else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+              {
+                // Grab the token 
+                tokenData.token2 = JSON.parse(obj2.data.auth_token);
+                console.log("Received non Json response with auth token: " + tokenData.token2);
+                logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token2);
+                if(tokenData.token1 != null)
+                {
+                  tokenMap[tokenData.token1] = tokenData.token2;
+                  console.log("Setting token map 2 https");
+                }
               }
             }
-            else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
+
+            var timeNow = (new Date()).getTime();
+            requestResponseData.response2LatencyMilliseconds = timeNow - requestResponseData.timeRequest2Made;
+
+            // console.log(JSON.stringify(obj2) );
+            //console.log("===============Response data from manufacturing is: " + JSON.stringify(obj2));
+
+            requestResponseData.responseData2 = obj2;
+
+            if(requestResponseData.responseData1 != null)
             {
-              // Grab the token 
-              tokenData.token2 = JSON.parse(obj2.data.auth_token);
-              console.log("Received non Json response with auth token: " + tokenData.token2);
-              logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token2);
-              if(tokenData.token1 != null)
-              {
-                tokenMap[tokenData.token1] = tokenData.token2;
-                console.log("Setting token map 2 https");
-              }
+              console.log(requestResponseData);
+              logger.info(JSON.stringify(requestResponseData) );
             }
+
           }
-
-          var timeNow = (new Date()).getTime();
-          requestResponseData.response2LatencyMilliseconds = timeNow - requestResponseData.timeRequest2Made;
-
-          // console.log(JSON.stringify(obj2) );
-          //console.log("===============Response data from manufacturing is: " + JSON.stringify(obj2));
-
-          requestResponseData.responseData2 = obj2;
-
-          if(requestResponseData.responseData1 != null)
-          {
-            console.log(requestResponseData);
-            logger.info(JSON.stringify(requestResponseData) );
-          }
-
-        }
-      });      
+        });      
 
       // dont pipe second response
 
+      }
+
+    } // if res2 not null
+
+    else
+    {
+      console.log("Res2 null" );
+      logger.info("Mirroring: Res2 null" );
     }
    
   });
