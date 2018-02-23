@@ -36,7 +36,7 @@ const logger = new Logger({
 
 var options = 
 {
-   //cert: fs.readFileSync('../ssl/test.com.crt'),
+   // cert: fs.readFileSync('../ssl/test.com.crt'),
    //key: fs.readFileSync('../ssl/test.com.key')
   cert: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.crt'),
   key: fs.readFileSync('/etc/ssl-glowforge/glowforge.com.key')
@@ -379,19 +379,19 @@ function onRequest(client_req, client_res) {
         }
 
 
-        if(res.headers && res.headers.hasOwnProperty("cookie"))
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("cookie"))
         {
             client_res.headers["cookie"] = res.headers["cookie"];
         }
-        if(res.headers && res.headers.hasOwnProperty("authorization"))
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("authorization"))
         {
             client_res.headers["authorization"] = res.headers["authorization"];
         }
-        if(res.headers && res.headers.hasOwnProperty("content-type"))
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("content-type"))
         {
             client_res.headers["content-type"] = res.headers["content-type"];
         }
-        if(res.headers && res.headers.hasOwnProperty("status"))
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("status"))
         {
             client_res.headers["status"] = res.headers["status"];
         }
@@ -875,27 +875,27 @@ function onRequestS(client_req, client_res) {
       logger.info("Mirroring: non redirect response 4");
 
 
-/*
+
       if(res.headers)
       {
         client_res.headers = res.headers;
       }
-*/
+
       
 
-      if(res.headers && res.headers.hasOwnProperty("cookie"))
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("cookie"))
       {
           client_res.headers["cookie"] = res.headers["cookie"];
       }
-      if(res.headers && res.headers.hasOwnProperty("authorization"))
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("authorization"))
       {
           client_res.headers["authorization"] = res.headers["authorization"];
       }
-      if(res.headers && res.headers.hasOwnProperty("content-type"))
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("content-type"))
       {
           client_res.headers["content-type"] = res.headers["content-type"];
       }
-      if(res.headers && res.headers.hasOwnProperty("status"))
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("status"))
       {
           client_res.headers["status"] = res.headers["status"];
       }
