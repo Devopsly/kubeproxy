@@ -369,6 +369,12 @@ function onRequest(client_req, client_res) {
         });      
 
 
+        if(res.headers)
+        {
+          client_res.headers = res.headers;
+        }
+
+
         if(res.headers && res.headers.hasOwnProperty("cookie"))
         {
             client_res.headers["cookie"] = res.headers["cookie"];
@@ -377,17 +383,28 @@ function onRequest(client_req, client_res) {
         {
             client_res.headers["authorization"] = res.headers["authorization"];
         }
-
-
-        if(res.headers)
+        if(res.headers && res.headers.hasOwnProperty("content-type"))
         {
-          client_res.headers = res.headers;
+            client_res.headers["content-type"] = res.headers["content-type"];
+        }
+        if(res.headers && res.headers.hasOwnProperty("status"))
+        {
+            client_res.headers["status"] = res.headers["status"];
         }
 
 
-        res.pipe(client_res, {
-          end: true
-        });
+        if(client_req.indexOf("lid_image" != -1))
+        {
+          logger.info("Mirroring: lid_image response end");
+          client_res.writeHead(200);
+          client_res.end();
+        }
+        else
+        {
+          res.pipe(client_res, {
+            end: true
+          });
+        }
 
 
       }
@@ -851,7 +868,10 @@ function onRequestS(client_req, client_res) {
       logger.info("Mirroring: non redirect response 4");
 
 
-
+      if(res.headers)
+      {
+        client_res.headers = res.headers;
+      }
       
 
       if(res.headers && res.headers.hasOwnProperty("cookie"))
@@ -862,15 +882,29 @@ function onRequestS(client_req, client_res) {
       {
           client_res.headers["authorization"] = res.headers["authorization"];
       }
-
-      if(res.headers)
+      if(res.headers && res.headers.hasOwnProperty("content-type"))
       {
-        client_res.headers = res.headers;
+          client_res.headers["content-type"] = res.headers["content-type"];
+      }
+      if(res.headers && res.headers.hasOwnProperty("status"))
+      {
+          client_res.headers["status"] = res.headers["status"];
       }
 
-      res.pipe(client_res, {
-        end: true
-      });
+
+
+      if(client_req.indexOf("lid_image" != -1))
+      {
+        logger.info("Mirroring: lid_image response end");
+        client_res.writeHead(200);
+        client_res.end();
+      }
+      else
+      {
+        res.pipe(client_res, {
+          end: true
+        });
+      }
 
       logger.info("Mirroring: non redirect response 5");
 
