@@ -287,7 +287,7 @@ function onRequest(client_req, client_res) {
       res.on('end', function () {
         console.log("Res http ended ");
         logger.info("Res http ended");
-        var contentType = res.headers["content-type"].toLowerCase();
+        contentType = contentType.toLowerCase();
         if (true) // (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
@@ -380,7 +380,7 @@ function onRequest(client_req, client_res) {
   });
 
 
-requestResponseData.timeRequest2Made = (new Date()).getTime();
+    requestResponseData.timeRequest2Made = (new Date()).getTime();
 
     var proxy2 = https.request(options2, function (res2) {
 
@@ -431,7 +431,7 @@ requestResponseData.timeRequest2Made = (new Date()).getTime();
       res2.on('end', function () {
         console.log("Res2 http ended ");
         logger.info("Res2 http ended");
-        var contentType = res2.headers["content-type"].toLowerCase();
+        contentType = contentType.toLowerCase();
         if (true) // (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
@@ -717,7 +717,8 @@ function onRequestS(client_req, client_res) {
       res.on('end', function () {
         console.log("Res https ended ");
         logger.info("Res https ended");
-        var contentType = res.headers["content-type"].toLowerCase();
+        //var contentType = res.headers["content-type"].toLowerCase();
+        contentType = contentType.toLowerCase();
         if (true) //  contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
@@ -845,7 +846,7 @@ function onRequestS(client_req, client_res) {
 
         console.log("Res2 https ended ");
         logger.info("Res2 https ended");
-        var contentType = res2.headers["content-type"].toLowerCase();
+        contentType = contentType.toLowerCase();
         if(true) // (contentType.indexOf("image") == -1 )
         //if (contentType.indexOf("json") != -1 )
         {
