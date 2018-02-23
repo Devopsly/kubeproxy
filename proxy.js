@@ -182,6 +182,15 @@ function onRequest(client_req, client_res) {
     }
   }
 
+  if(client_req.headers["content-type"])
+  {
+    headers2["content-type"] = client_req.headers["content-type"];
+  }
+  if(client_req.headers["content-length"])
+  {
+    headers2["content-length"] = client_req.headers["content-length"];
+  }
+
   console.log("Mirroring actual headers 2: " + JSON.stringify(headers2) );
   logger.info("Mirroring: actual headers 2: " + JSON.stringify(headers2) );
 
@@ -375,7 +384,7 @@ function onRequest(client_req, client_res) {
           client_res.headers = res.headers;
         }
 
-        
+
         res.pipe(client_res, {
           end: true
         });
@@ -669,6 +678,16 @@ function onRequestS(client_req, client_res) {
       headers2["cookie"] = client_req.headers["cookie"] ; 
     }
   }
+
+  if(client_req.headers["content-type"])
+  {
+    headers2["content-type"] = client_req.headers["content-type"];
+  }
+  if(client_req.headers["content-length"])
+  {
+    headers2["content-length"] = client_req.headers["content-length"];
+  }
+
 
   console.log("Mirroring actual headers 2: " + JSON.stringify(headers2) );
 
