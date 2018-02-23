@@ -358,6 +358,7 @@ function onRequest(client_req, client_res) {
 
 
 
+
         if(res.headers.hasOwnProperty("cookie"))
         {
           client_res.headers["cookie"] = res.headers["cookie"];
@@ -812,6 +813,13 @@ function onRequestS(client_req, client_res) {
       }   
 
       logger.info("Mirroring: non redirect response 4");
+
+
+      if(res.headers.hasOwnProperty("cookie"))
+      {
+          client_res.headers["cookie"] = res.headers["cookie"];
+      }
+
 
       res.pipe(client_res, {
         end: true
