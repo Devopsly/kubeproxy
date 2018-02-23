@@ -726,18 +726,21 @@ function onRequestS(client_req, client_res) {
       }
       else
       {
-        logger.info("Mirroring: non redirect response");
+        logger.info("Mirroring: non redirect res1 ");
         var responseData = '';
         res.on('data', function (chunk) {
           //res.setEncoding('utf8');
           responseData += chunk;
         });
 
+        logger.info("Mirroring: non redirect response 2");
+
         res.on('error', function (error) {
             console.log("response error " + error.message);
             logger.info("Mirroring:  response error " + error.message);
         });
 
+        logger.info("Mirroring: non redirect response 3");
 
         res.on('end', function () {
           console.log("Res https ended ");
@@ -808,9 +811,13 @@ function onRequestS(client_req, client_res) {
         });
       }   
 
+      logger.info("Mirroring: non redirect response 4");
+
       res.pipe(client_res, {
         end: true
       });
+
+      logger.info("Mirroring: non redirect response 5");
 
 
     } // end if res
@@ -875,16 +882,20 @@ function onRequestS(client_req, client_res) {
       }
       else
       {
-        logger.info("Mirroring: non redirect response");
+        logger.info("Mirroring: non redirect res2");
         var responseData = '';
         res2.on('data', function (chunk) {
           //res.setEncoding('utf8');
           responseData += chunk;
         });
 
+        logger.info("Mirroring: non redirect response 2");
+
         res2.on('error', function (error) {
             console.log("response error " + error.message);
         });
+
+        logger.info("Mirroring: non redirect response 3");
 
 
         res2.on('end', function () {
@@ -956,7 +967,9 @@ function onRequestS(client_req, client_res) {
             }
 
           }
-        });      
+        });     
+
+        logger.info("Mirroring: non redirect response 4"); 
 
       // dont pipe second response
 
