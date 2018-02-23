@@ -370,6 +370,12 @@ function onRequest(client_req, client_res) {
         }
 
 
+        if(res.headers)
+        {
+          client_res.headers = res.headers;
+        }
+
+        
         res.pipe(client_res, {
           end: true
         });
@@ -838,6 +844,10 @@ function onRequestS(client_req, client_res) {
           client_res.headers["authorization"] = res.headers["authorization"];
       }
 
+      if(res.headers)
+      {
+        client_res.headers = res.headers;
+      }
 
       res.pipe(client_res, {
         end: true
