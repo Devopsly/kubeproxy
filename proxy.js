@@ -393,7 +393,7 @@ function onRequest(client_req, client_res) {
         }
 
 
-        if(client_req.indexOf("lid_image" != -1))
+        if(client_req.url.indexOf("lid_image" != -1))
         {
           logger.info("Mirroring: lid_image response end");
           client_res.writeHead(200);
@@ -893,7 +893,7 @@ function onRequestS(client_req, client_res) {
 
 
 
-      if(client_req.indexOf("lid_image" != -1))
+      if(client_req.url.indexOf("lid_image" != -1))
       {
         logger.info("Mirroring: lid_image response end");
         client_res.writeHead(200);
