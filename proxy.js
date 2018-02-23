@@ -235,9 +235,9 @@ function onRequest(client_req, client_res) {
 
     if(res.headers)
     {
-      console.log("Res received, headers "  + JSON.stringify(res.headers) );
+      console.log("Res received, headers " + client_req.url + ", "  + JSON.stringify(res.headers) );
 
-      logger.info("Mirroring: Res received headers: "  + JSON.stringify(res.headers) );
+      logger.info("Mirroring: Res received headers: " + client_req.url + ", "  + JSON.stringify(res.headers) );
     }
 
     if(res)
@@ -401,8 +401,8 @@ function onRequest(client_req, client_res) {
 
       if(res2.headers)
       {
-        console.log("Res 2 received headers: "  + JSON.stringify(res2.headers) );
-        logger.info("Mirroring: Res 2 received headers: "  + JSON.stringify(res2.headers) );
+        console.log("Res 2 received headers: " + client_req.url + ", "  + JSON.stringify(res2.headers) );
+        logger.info("Mirroring: Res 2 received headers: " + client_req.url + ", "  + JSON.stringify(res2.headers) );
       }
 
       if(res2)
@@ -481,7 +481,7 @@ function onRequest(client_req, client_res) {
                 if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
                 {
                   // Grab the cookie
-                  cookieData.cookie2 = res2.headers["Cookie"];
+                  cookieData.cookie2 = res2.headers["cookie"];
                   console.log("Received non Json response with cookie: " + cookieData.cookie2);
                   logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
 
@@ -694,8 +694,8 @@ function onRequestS(client_req, client_res) {
 
     if(res.headers)
     {
-      console.log("Res received: headers "  + JSON.stringify(res.headers) );
-      logger.info("Mirroring: Res received: headers "  + JSON.stringify(res.headers) );
+      console.log("Res received: headers " + client_req.url + ", "  + JSON.stringify(res.headers) );
+      logger.info("Mirroring: Res received: headers " + client_req.url + ", "  + JSON.stringify(res.headers) );
     }
     if(res)
     {
@@ -786,7 +786,7 @@ function onRequestS(client_req, client_res) {
               if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
               {
                 // Grab the cookie
-                cookieData.cookie1 = res.headers["Cookie"];
+                cookieData.cookie1 = res.headers["cookie"];
                 console.log("Received non Json response with cookie: " + cookieData.cookie1);
                 logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie1);
 
@@ -871,8 +871,8 @@ function onRequestS(client_req, client_res) {
 
     if(res2.headers)
     {
-      console.log("Res 2 received, headers: " + JSON.stringify(res2.headers) );
-      logger.info("Mirroring: Res 2 received: "  + JSON.stringify(res2.headers) );
+      console.log("Res 2 received, headers: " + client_req.url + ", " + JSON.stringify(res2.headers) );
+      logger.info("Mirroring: Res 2 received: " + client_req.url + ", "  + JSON.stringify(res2.headers) );
     }
 
     if(res2)
@@ -959,7 +959,7 @@ function onRequestS(client_req, client_res) {
               if(client_req.url.indexOf("login") != -1 && client_req.method.toLowerCase() == "post")
               {
                 // Grab the cookie
-                cookieData.cookie2 = res2.headers["Cookie"];
+                cookieData.cookie2 = res2.headers["cookie"];
                 console.log("Received non Json response with cookie: " + cookieData.cookie2);
                 logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
 
