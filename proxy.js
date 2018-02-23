@@ -160,8 +160,8 @@ function onRequest(client_req, client_res) {
     if(tokenMap.hasOwnProperty(tok1))
     {
       headers2["authorization"] = client_req.headers["authorization"].replace(tok1, tokenMap[tok1]);
-      console.log('Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
-      logger.info("Mirroring: Replaced token in header for second request: Token1: " + tok1 + " , Token2: " +tokenMap[tok1]);
+      console.log('AuthTokenMirroring Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
+      logger.info("Mirroring: AuthTokenMirroring Replaced token in header for second request: Token1: " + tok1 + " , Token2: " +tokenMap[tok1]);
     }
     else
     {
@@ -173,8 +173,8 @@ function onRequest(client_req, client_res) {
     if(cookieMap.hasOwnProperty(client_req.headers["cookie"]) )
     {
       headers2["cookie"] = cookieMap[client_req.headers["cookie"]];
-      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
-      logger.info("Mirroring: Replaced cookie in header for second request: Cookie1: " + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
+      console.log('AuthCookieMirroring Replaced cookie in header for second request: Cookie1: ' + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
+      logger.info("Mirroring: AuthCookieMirroring Replaced cookie in header for second request: Cookie1: " + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
     }
     else
     {
@@ -313,14 +313,14 @@ function onRequest(client_req, client_res) {
               {
                 // Grab the token 
                 tokenData.token1 = obj.data.auth_token;
-                console.log("Received Json response 1 with auth token: " + tokenData.token1);
-                logger.info("Mirroring: Received Json response 1 with auth token: " + tokenData.token1);
+                console.log("AuthTokenMirroring Received Json response 1 with auth token: " + tokenData.token1);
+                logger.info("Mirroring: AuthTokenMirroring Received Json response 1 with auth token: " + tokenData.token1);
 
                 if(tokenData.token2 != null)
                 {
                   tokenMap[tokenData.token1] = tokenData.token2;
-                  console.log("Setting token map: " );
-                  logger.info("Mirroring: Setting token map: " );
+                  console.log("AuthTokenMirroring Setting token map: " );
+                  logger.info("Mirroring: AuthTokenMirroring Setting token map: " );
                 }
               }
             }
@@ -331,11 +331,13 @@ function onRequest(client_req, client_res) {
               {
                 // Grab the cookie
                 cookieData.cookie1 = res.headers["cookie"];
-                console.log("Received non Json response  1 with cookie: " + cookieData.cookie1);
-                logger.info("Mirroring: Received non Json response  1 with cookie: " + cookieData.cookie1);
+                console.log("AuthCookieMirroring Received non Json response  1 with cookie: " + cookieData.cookie1);
+                logger.info("Mirroring: AuthCookieMirroring Received non Json response  1 with cookie: " + cookieData.cookie1);
 
                 if(cookieData.cookie2 != null)
                 {
+                  console.log("AuthCookieMirroring Setting cookie map: ");
+                  logger.info("AuthCookieMirroring Setting cookie map: ");
                   cookieMap[cookieData.cookie1] = cookieData.cookie2;
                 }
               }
@@ -343,11 +345,13 @@ function onRequest(client_req, client_res) {
               {
                 // Grab the token 
                 tokenData.token1 = JSON.parse(obj.data.auth_token);
-                console.log("Received non Json response 1 with auth token: " + tokenData.token1);
-                 logger.info("Mirroring: Received non Json response 1 with auth token: " + tokenData.token1);
+                console.log("AuthTokenMirroring Received non Json response 1 with auth token: " + tokenData.token1);
+                 logger.info("Mirroring: AuthTokenMirroring Received non Json response 1 with auth token: " + tokenData.token1);
                 if(tokenData.token2 != null)
                 {
                   tokenMap[tokenData.token1] = tokenData.token2;
+                  console.log("AuthTokenMirroring Setting token map: ");
+                  logger.info("AuthTokenMirroring Setting token map: ");
 
                 }
               }
@@ -497,13 +501,13 @@ function onRequest(client_req, client_res) {
                 {
                   // Grab the token 
                   tokenData.token2 = obj2.data.auth_token;
-                  console.log("Received Json response 2 with auth token: " + tokenData.token2);
-                  logger.info("Mirroring: Received Json response 2 with auth token: " + tokenData.token2);
+                  console.log("AuthTokenMirroring Received Json response 2 with auth token: " + tokenData.token2);
+                  logger.info("Mirroring: AuthTokenMirroring Received Json response 2 with auth token: " + tokenData.token2);
                   if(tokenData.token1 != null)
                   {
                     tokenMap[tokenData.token1] = tokenData.token2;
-                    console.log("Setting token map: " );
-                    logger.info("Mirroring: Setting token map: " );
+                    console.log("AuthTokenMirroring Setting token map: ");
+                    logger.info("AuthTokenMirroring Setting token map: ");
                   }
                 }
               }
@@ -514,24 +518,27 @@ function onRequest(client_req, client_res) {
                 {
                   // Grab the cookie
                   cookieData.cookie2 = res2.headers["cookie"];
-                  console.log("Received non Json response with cookie: " + cookieData.cookie2);
-                  logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
+                  console.log("AuthCookieMirroring Received non Json response with cookie: " + cookieData.cookie2);
+                  logger.info("Mirroring: AuthCookieMirroring Received non Json response with cookie: " + cookieData.cookie2);
 
                   if(cookieData.cookie1 != null)
                   {
                     cookieMap[cookieData.cookie1] = cookieData.cookie2;
+                    console.log("AuthCookieMirroring Setting cookie map: ");
+                    logger.info("AuthCookieMirroring Setting cookie map: ");
                   }
                 }
                 else if(client_req.url.indexOf("machines/sign_in") != -1 && client_req.method.toLowerCase() == "post")
                 {
                   // Grab the token 
                   tokenData.token2 = JSON.parse(obj2.data.auth_token);
-                  console.log("Received non Json response with auth token: " + tokenData.token2);
-                  logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token2);
+                  console.log("AuthTokenMirroring Received non Json response with auth token: " + tokenData.token2);
+                  logger.info("Mirroring: AuthTokenMirroring Received non Json response with auth token: " + tokenData.token2);
                   if(tokenData.token1 != null)
                   {
                     tokenMap[tokenData.token1] = tokenData.token2;
-
+                    console.log("AuthTokenMirroring Setting token map: ");
+                    logger.info("AuthTokenMirroring Setting token map: ");
                   }
                 }
               }
@@ -674,8 +681,8 @@ function onRequestS(client_req, client_res) {
     if(tokenMap.hasOwnProperty(tok1))
     {
       headers2["authorization"] = client_req.headers["authorization"].replace(tok1, tokenMap[tok1]);
-      console.log('Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
-       logger.info("Mirroring: Replaced token in header for second request: Token1: " + tok1 + " , Token2: " +tokenMap[tok1]);
+      console.log('AuthTokenMirroring Replaced token in header for second request: Token1: ' + tok1 + " , Token2: " +tokenMap[tok1]);
+       logger.info("Mirroring: AuthTokenMirroring Replaced token in header for second request: Token1: " + tok1 + " , Token2: " +tokenMap[tok1]);
     }
     else
     {
@@ -687,8 +694,8 @@ function onRequestS(client_req, client_res) {
     if(cookieMap.hasOwnProperty(client_req.headers["cookie"]) )
     {
       headers2["cookie"] = cookieMap[client_req.headers["cookie"]];
-      console.log('Replaced cookie in header for second request: Cookie1: ' + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
-       logger.info("Mirroring: Replaced cookie in header for second request: Cookie1: " + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
+      console.log('AuthCookieMirroring Replaced cookie in header for second request: Cookie1: ' + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
+      logger.info("Mirroring: AuthTokenMirroring Replaced cookie in header for second request: Cookie1: " + client_req.headers["cookie"] + " , Cookie2: " + headers2["cookie"]);
     }
     else
     {
@@ -708,7 +715,7 @@ function onRequestS(client_req, client_res) {
 
   console.log("Mirroring actual headers 2: " + JSON.stringify(headers2) );
 
-    logger.info("Mirroring: actual headers 2: " + JSON.stringify(headers2) );
+  logger.info("Mirroring: actual headers 2: " + JSON.stringify(headers2) );
 
 
   var options2 = {
@@ -1006,13 +1013,13 @@ function onRequestS(client_req, client_res) {
               {
                 // Grab the token 
                 tokenData.token2 = obj2.data.auth_token;
-                console.log("Received https Json response 2 with auth token: " + tokenData.token2);
-                logger.info("Mirroring: Received https Json response 2 with auth token: " + tokenData.token2);
+                console.log("AuthTokenMirroring Received https Json response 2 with auth token: " + tokenData.token2);
+                logger.info("Mirroring: AuthTokenMirroring - Received https Json response 2 with Authtoken: " + tokenData.token2);
                 if(tokenData.token1 != null)
                 {
                   tokenMap[tokenData.token1] = tokenData.token2;
-                  console.log("Setting token map 2 https");
-                  logger.info("Mirroring: Setting token map 2 https");
+                  console.log("AuthTokenMirroring Setting token map 2 https " + tokenData.token1 + " Mapped to " +  tokenData.token2);
+                  logger.info("Mirroring: AuthTokenMirroring Setting token map 2 https");
                 }
               }
             }
@@ -1023,8 +1030,8 @@ function onRequestS(client_req, client_res) {
               {
                 // Grab the cookie
                 cookieData.cookie2 = res2.headers["cookie"];
-                console.log("Received non Json response with cookie: " + cookieData.cookie2);
-                logger.info("Mirroring: Received non Json response with cookie: " + cookieData.cookie2);
+                console.log("AuthCookieMirroring Received non Json response with cookie: " + cookieData.cookie2);
+                logger.info("Mirroring: AuthCookieMirroring Received non Json response with cookie: " + cookieData.cookie2);
 
                 if(cookieData.cookie1 != null)
                 {
@@ -1035,12 +1042,13 @@ function onRequestS(client_req, client_res) {
               {
                 // Grab the token 
                 tokenData.token2 = JSON.parse(obj2.data.auth_token);
-                console.log("Received non Json response with auth token: " + tokenData.token2);
-                logger.info("Mirroring: Received non Json response with auth token: " + tokenData.token2);
+                console.log("AuthTokenMirroring Received non Json response with auth token: " + tokenData.token2);
+                logger.info("Mirroring: AuthTokenMirroring Received non Json response with auth token: " + tokenData.token2);
                 if(tokenData.token1 != null)
                 {
                   tokenMap[tokenData.token1] = tokenData.token2;
-                  console.log("Setting token map 2 https");
+                  console.log("AuthTokenMirroring Setting token map 2 https");
+                  logger.info("Mirroring: AuthTokenMirroring Setting token map 2 https");
                 }
               }
             }
