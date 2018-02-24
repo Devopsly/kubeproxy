@@ -94,7 +94,7 @@ function onRequest(client_req, client_res) {
   logger.info('Mirroring: Http request to ' + client_req.url);
   logger.info('Mirroring: Client request headers: ' + JSON.stringify(client_req.headers) );
 
-  var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
+  var sourceIp = ""; // client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
   var uniqueId = uuidV4(); // sourceIp + (new Date()).getTime() ;
 
@@ -269,8 +269,8 @@ function onRequest(client_req, client_res) {
         source: sourceIp,
         request_url: client_req.url,
         response_code: res.statusCode,
-        response_header: res.headers,
-        data: null
+        // response_header: res.headers,
+        data: ""
       };
       
       // console.log("Response 1: " + JSON.stringify(obj) );
@@ -373,16 +373,28 @@ function onRequest(client_req, client_res) {
         });      
 
 
-        if(res.headers)
-        {
-          client_res.headers = res.headers;
-        }
+      /*
+      if(res.headers)
+      {
+        client_res.headers = res.headers;
+      }
+
+      */
+      if(!client_res.headers)
+      {
+        client_res.headers = {};
+      } 
 
 
         if(res.headers && client_res.headers && res.headers.hasOwnProperty("cookie"))
         {
             client_res.headers["cookie"] = res.headers["cookie"];
         }
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("set-cookie"))
+        {
+            client_res.headers["set-cookie"] = res.headers["set-cookie"];
+        }
+
         if(res.headers && client_res.headers && res.headers.hasOwnProperty("authorization"))
         {
             client_res.headers["authorization"] = res.headers["authorization"];
@@ -394,6 +406,14 @@ function onRequest(client_req, client_res) {
         if(res.headers && client_res.headers && res.headers.hasOwnProperty("status"))
         {
             client_res.headers["status"] = res.headers["status"];
+        }
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("connection"))
+        {
+            client_res.headers["connection"] = res.headers["connection"];
+        }
+        if(res.headers && client_res.headers && res.headers.hasOwnProperty("transfer-encoding"))
+        {
+            client_res.headers["transfer-encoding"] = res.headers["transfer-encoding"];
         }
 
 
@@ -462,8 +482,8 @@ function onRequest(client_req, client_res) {
           source: sourceIp,
           request_url: client_req.url,
           response_code: res2.statusCode,
-          response_header: res2.headers,
-          data: null
+          // response_header: res2.headers,
+          data: ""
         };
 
 
@@ -611,7 +631,7 @@ function onRequestS(client_req, client_res) {
   logger.info('Mirroring: Https request to ' + client_req.url);
   logger.info('Mirroring: client request headers: ' + JSON.stringify(client_req.headers ) );
 
-  var sourceIp = client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
+  var sourceIp = ""; // client_req.headers['x-forwarded-for'] || client_req.connection.remoteAddress; 
 
   var uniqueId = uuidV4(); // sourceIp + (new Date()).getTime() ;
 
@@ -771,8 +791,8 @@ function onRequestS(client_req, client_res) {
         source: sourceIp,
         request_url: client_req.url,
         response_code: res.statusCode,
-        response_header: res.headers,
-        data: null
+        // response_header: res.headers,
+        data: ""
 
       };
 
@@ -876,16 +896,25 @@ function onRequestS(client_req, client_res) {
 
 
 
+/*
       if(res.headers)
       {
         client_res.headers = res.headers;
       }
 
-      
+*/
+      if(!client_res.headers)
+      {
+        client_res.headers = {};
+      } 
 
       if(res.headers && client_res.headers && res.headers.hasOwnProperty("cookie"))
       {
           client_res.headers["cookie"] = res.headers["cookie"];
+      }
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("set-cookie"))
+      {
+          client_res.headers["set-cookie"] = res.headers["set-cookie"];
       }
       if(res.headers && client_res.headers && res.headers.hasOwnProperty("authorization"))
       {
@@ -899,7 +928,14 @@ function onRequestS(client_req, client_res) {
       {
           client_res.headers["status"] = res.headers["status"];
       }
-
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("connection"))
+        {
+            client_res.headers["connection"] = res.headers["connection"];
+        }
+      if(res.headers && client_res.headers && res.headers.hasOwnProperty("transfer-encoding"))
+        {
+            client_res.headers["transfer-encoding"] = res.headers["transfer-encoding"];
+        }
 
 
       if( client_req.url.indexOf("lid_image") != -1 )
@@ -973,8 +1009,8 @@ function onRequestS(client_req, client_res) {
         source: sourceIp,
         request_url: client_req.url,
         response_code: res2.statusCode,
-        response_header: res2.headers,
-        data: null
+        // response_header: res2.headers,
+        data: ""
       };
       
      if(res2.statusCode == 301 || res2.statusCode == 302 || res2.statusCode == 404)
