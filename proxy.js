@@ -366,7 +366,7 @@ function onRequest(client_req, client_res) {
 
             if(requestResponseData.responseData2 != null)
             {
-              console.log(requestResponseData);
+              console.log(JSON.stringify(requestResponseData) );
               logger.info( JSON.stringify(requestResponseData) );
             }
           }
@@ -570,7 +570,7 @@ function onRequest(client_req, client_res) {
 
               if(requestResponseData.responseData1 != null)
               {
-                console.log(requestResponseData);
+                console.log(JSON.stringify(requestResponseData));
                 logger.info(JSON.stringify(requestResponseData) ) ;
               }
 
@@ -885,7 +885,7 @@ function onRequestS(client_req, client_res) {
             requestResponseData.responseData1 = obj;
             if(requestResponseData.responseData2 != null)
             {
-              console.log(requestResponseData);
+              console.log(JSON.stringify(requestResponseData));
               logger.info(JSON.stringify(requestResponseData) );
             }
           }
@@ -1101,7 +1101,7 @@ function onRequestS(client_req, client_res) {
 
             if(requestResponseData.responseData1 != null)
             {
-              console.log(requestResponseData);
+              console.log(JSON.stringify(requestResponseData) );
               logger.info(JSON.stringify(requestResponseData) );
             }
 
